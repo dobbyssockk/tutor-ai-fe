@@ -1,0 +1,48 @@
+{
+  "conversations": [
+    {
+      "conversation_id": "abc123",
+      "title": "Algebra",
+      "created_at": "2025-03-28T12:00:00Z",
+      "updated_at": "2025-03-28T12:15:00Z",
+      "last_message_preview": "How to solve square equations?",
+      "unread_count": 0,
+      "messages": [
+        {
+          "message_id": "msg1",
+          "sender": "user",
+          "message_text": "Hi, help me with algebra",
+          "timestamp": "2025-03-28T12:00:00Z"
+        },
+        {
+          "message_id": "msg2",
+          "sender": "bot",
+          "message_text": "Sure, tell me more about your problem",
+          "timestamp": "2025-03-28T12:01:00Z"
+        }
+      ]
+    },
+    {
+      "conversation_id": "def456",
+      "title": "History",
+      "created_at": "2025-03-27T10:30:00Z",
+      "updated_at": "2025-03-27T10:45:00Z",
+      "last_message_preview": "Tell me...",
+      "unread_count": 1,
+      "messages": [
+        {
+          "message_id": "msg3",
+          "sender": "user",
+          "message_text": "History...",
+          "timestamp": "2025-03-27T10:30:00Z"
+        },
+        {
+          "message_id": "msg4",
+          "sender": "bot",
+          "message_text": "It started in 1861",
+          "timestamp": "2024-03-27T10:45:00Z"
+        }
+      ]
+    }
+  ]
+}
