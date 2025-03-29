@@ -1,9 +1,10 @@
-import { IconRobot } from '@tabler/icons-react';
 import { LoginForm } from '@/components/login-form';
+import { IconRobot } from '@tabler/icons-react';
 
 const LoginPage = () => {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
+      {/* left side */}
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
           <a
@@ -22,6 +23,8 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
+
+      {/* right side */}
       <div className="relative hidden lg:flex items-center justify-center p-10 bg-gradient-to-br from-indigo-600 to-purple-600 text-white">
         <div className="max-w-xl space-y-6">
           <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
