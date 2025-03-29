@@ -7,6 +7,25 @@ button {
   cursor: pointer;
 }
 
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: oklch(0.141 0.005 285.823);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #3c3c3c;
+  border-radius: 4px;
+  border: 2px solid #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #555555;
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
