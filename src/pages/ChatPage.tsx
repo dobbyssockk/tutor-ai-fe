@@ -20,6 +20,7 @@ import { Loader2 } from 'lucide-react';
 
 const ChatPage = () => {
   const [text, setText] = useState('');
+
   const { messages, setMessages, loading, generateGPT } =
     useGenerateResponseGPT();
 

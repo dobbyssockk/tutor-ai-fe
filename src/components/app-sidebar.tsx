@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/sidebar';
 
 import chatsData from '../chatsData.json';
+import useAuth from '@/hooks/useAuth';
 
 const { conversations } = chatsData;
 
@@ -24,16 +25,18 @@ const mappedData = (arr) =>
     icon: IconMessages,
   }));
 
-const data = {
-  user: {
-    name: 'shadcn',
-    email: 'm@example.com',
-    avatar: '/avatars/shadcn.jpg',
-  },
-  navMain: mappedData(conversations),
-};
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth();
+
+  const data = {
+    user: {
+      name: user.name,
+      email: user.email,
+      avatar: '/avatars/shadcn.jpg',
+    },
+    navMain: mappedData(conversations),
+  };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>

@@ -19,7 +19,9 @@ const useGenerateResponseGPT = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    localStorage.setItem('messages', JSON.stringify(messages));
+    if (messages.length !== 0) {
+      localStorage.setItem('messages', JSON.stringify(messages));
+    }
   }, [messages]);
 
   const generateGPT = async (text: string) => {
