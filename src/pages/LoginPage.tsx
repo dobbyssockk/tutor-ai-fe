@@ -1,4 +1,4 @@
-import { LoginForm } from '@/components/login-form';
+import { LoginForm } from '@/components/authentication/login-form';
 import { IconRobot } from '@tabler/icons-react';
 
 const LoginPage = () => {

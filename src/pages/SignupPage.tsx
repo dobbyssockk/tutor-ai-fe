@@ -1,4 +1,4 @@
-import { SignupForm } from '@/components/signup-form';
+import { SignupForm } from '@/components/authentication/signup-form';
 import { IconRobot } from '@tabler/icons-react';
 import useAuth from '@/hooks/useAuth';
 
