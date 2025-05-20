@@ -3,7 +3,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
+import SignUpPage from './pages/SignUpPage';
 import ChatPage from './pages/ChatPage';
 import NoChatSelected from './components/NoChatSelected';
 import ChatView from './components/ChatView';
@@ -31,7 +31,7 @@ function App() {
             path="/signup"
             element={
               <ProtectedRoute onlyForAuth={false} redirectPath="/chat">
-                <SignupPage />
+                <SignUpPage />
               </ProtectedRoute>
             }
           />

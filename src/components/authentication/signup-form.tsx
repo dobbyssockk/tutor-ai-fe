@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import useSignUp from '@/hooks/useSignUp';
 
 // Validation
-const signupSchema = z.object({
+const signUpSchema = z.object({
   email: z.string().email('Invalid email address'),
   username: z
     .string()
@@ -22,9 +22,9 @@ const signupSchema = z.object({
     .max(100, 'Password must be at most 100 characters'),
 });
 
-type SignupFormData = z.infer<typeof signupSchema>;
+type SignUpFormData = z.infer<typeof signUpSchema>;
 
-export function SignupForm({
+export function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<'form'>) {
@@ -32,12 +32,12 @@ export function SignupForm({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema),
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema),
   });
 
   const { mutate, status, error } = useSignUp();
-  const signUp = (data: SignupFormData) => {
+  const signUp = (data: SignUpFormData) => {
     mutate(data);
   };
 
