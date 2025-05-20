@@ -9,6 +9,7 @@ const useChatManager = (id: string | undefined) => {
 
   const sendMessage = async (text: string) => {
     if (!id) return;
+    if (!text) return;
 
     const prevMsgId = conversation?.messages
       .slice()

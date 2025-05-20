@@ -10,6 +10,7 @@ const useCreateConversation = () => {
 
   const handleCreateConversation = async (text: string) => {
     const id = uuidv4();
+    if (!text) return;
 
     addConversation(id, text);
     navigate(`/chat/${id}`);

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
-import useAuth from '@/hooks/useAuth';
+import useAuthStore from '@/modules/auth/store';
 
 interface ProtectedRouteProps {
   onlyForAuth: boolean;
@@ -13,7 +13,7 @@ const ProtectedRoute = ({
   redirectPath,
   children,
 }: ProtectedRouteProps) => {
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   const isAuthenticated = !!user;
 
   if (onlyForAuth !== isAuthenticated) {

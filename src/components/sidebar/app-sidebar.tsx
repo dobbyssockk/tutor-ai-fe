@@ -14,12 +14,12 @@ import {
 } from '@/components/ui/sidebar';
 
 import { Link } from 'react-router-dom';
-import useAuth from '@/hooks/useAuth';
 import useConversations from '@/hooks/useConversations';
 import { Conversation } from '@/context/ConversationsContext';
+import useAuthStore from '@/modules/auth/store';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   const { conversations, removeConversation } = useConversations();
 
   const mappedData = (arr: Conversation[]) => {
@@ -45,8 +45,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const data = {
     user: {
-      name: user.name,
-      email: user.email,
+      email: user?.email || '-',
+      username: user?.username || '-',
       avatar: '/avatars/shadcn.jpg',
     },
     navMain: mappedData(conversations),
