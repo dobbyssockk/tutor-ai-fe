@@ -1,3 +1,3 @@
-# React + TypeScript + Vite
+# Tutor AI [Frontend]
 
-## Tutor AI
+## React + TypeScript + Vite

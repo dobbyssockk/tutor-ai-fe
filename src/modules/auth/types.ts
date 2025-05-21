@@ -20,3 +20,7 @@ export type AuthResponse = {
   user: User;
   token: string;
 };
+
+export type AuthMeResponse = {
+  user: User;
+};

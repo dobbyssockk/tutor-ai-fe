@@ -1,9 +1,9 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import useAuthStore from '@/modules/auth/store';
 import { login } from '@/modules/auth/service';
 
 const useLogin = () => {
-  // const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
   const setUser = useAuthStore((state) => state.setUser);
 
   return useMutation({
@@ -13,8 +13,7 @@ const useLogin = () => {
       setUser(user);
       localStorage.setItem('authToken', token);
 
-      // TODO:
-      // queryClient.setQueryData(['me'], user);
+      queryClient.setQueryData(['me'], user);
     },
     onError: (err) => {
       console.error('Login error:', err);

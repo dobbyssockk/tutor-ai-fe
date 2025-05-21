@@ -1,4 +1,9 @@
-import { CreateUser, LoginUser, AuthResponse } from '@/modules/auth/types';
+import {
+  CreateUser,
+  LoginUser,
+  AuthResponse,
+  AuthMeResponse,
+} from '@/modules/auth/types';
 import customAxios from '@/lib/axios';
 import { AxiosError } from 'axios';
 
@@ -8,7 +13,7 @@ export const signUp = async (userData: CreateUser): Promise<AuthResponse> => {
     return data;
   } catch (err) {
     if (err instanceof AxiosError) {
-      throw new Error(err?.response?.data?.message || 'Login failed');
+      throw new Error(err?.response?.data?.message || 'Sign up failed');
     }
     throw err;
   }
@@ -24,4 +29,9 @@ export const login = async (userData: LoginUser): Promise<AuthResponse> => {
     }
     throw err;
   }
+};
+
+export const fetchMe = async (): Promise<AuthMeResponse> => {
+  const { data } = await customAxios.get('/auth/me');
+  return data;
 };

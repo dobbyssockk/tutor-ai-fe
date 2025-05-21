@@ -23,6 +23,8 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
+import useAuthStore from '@/modules/auth/store';
+
 export function NavUser({
   user,
 }: {
@@ -33,9 +35,8 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-  // TODO:
   // delete token and setUser(null)
-  const logout = () => {};
+  const logout = useAuthStore((state) => state.logout);
 
   return (
     <SidebarMenu>
