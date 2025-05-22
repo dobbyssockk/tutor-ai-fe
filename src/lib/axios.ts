@@ -18,7 +18,8 @@ customAxios.interceptors.request.use((config) => {
 customAxios.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error?.response?.status === 401) {
+    const url = error.config?.url || '';
+    if (error?.response?.status === 401 && !url.endsWith('/login') && !url.endsWith('/signup')) {
       useAuthStore.getState().logout();
       queryClient.clear();
     }
