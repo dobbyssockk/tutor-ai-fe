@@ -19,7 +19,7 @@ import { Conversation } from '@/context/ConversationsContext';
 import useAuthStore from '@/modules/auth/store';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const user = useAuthStore((state) => state.user);
+  const { user } = useAuthStore();
   const { conversations, removeConversation } = useConversations();
 
   const mappedData = (arr: Conversation[]) => {

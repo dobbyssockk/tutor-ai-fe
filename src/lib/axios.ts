@@ -1,4 +1,6 @@
 import axios from 'axios';
+import useAuthStore from '@/modules/auth/store';
+import queryClient from './queryClient';
 
 const BASE_URL = 'http://localhost:3000';
 const customAxios = axios.create({
@@ -6,14 +8,22 @@ const customAxios = axios.create({
 });
 
 customAxios.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
+  const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// TODO:
-// handle 403 error (log out user (token expired))
+customAxios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401) {
+      useAuthStore.getState().logout();
+      queryClient.clear();
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default customAxios;

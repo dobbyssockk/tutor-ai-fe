@@ -36,7 +36,7 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   // delete token and setUser(null)
-  const logout = useAuthStore((state) => state.logout);
+  const { logout } = useAuthStore();
 
   return (
     <SidebarMenu>

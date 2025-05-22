@@ -4,14 +4,14 @@ import { login } from '@/modules/auth/service';
 
 const useLogin = () => {
   const queryClient = useQueryClient();
-  const setUser = useAuthStore((state) => state.setUser);
+  const { setToken, setUser } = useAuthStore();
 
   return useMutation({
     mutationFn: login,
     onSuccess: (data) => {
       const { user, token } = data;
+      setToken(token);
       setUser(user);
-      localStorage.setItem('authToken', token);
 
       queryClient.setQueryData(['me'], user);
     },
