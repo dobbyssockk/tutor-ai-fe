@@ -1,21 +1,24 @@
 import { useState } from 'react';
-import useCreateConversation from '@/hooks/useCreateConversation';
 
-// shadcn
-import ChatInput from '@/components/ChatInput';
-
-// icons
 import { MessageSquareDashed } from 'lucide-react';
+
+import ChatInput from '@/components/ChatInput';
+import { useCreateChat } from '@/modules/chats/hooks/useChats';
 
 const NoChatSelected = () => {
   const [text, setText] = useState(''); // for input
-  const { loading, handleCreateConversation } = useCreateConversation();
+
+  const { mutate, isPending } = useCreateChat();
+
+  const handleSend = () => {
+    if (!text.trim()) return;
+    mutate(text);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleCreateConversation(text);
-      setText('');
+      handleSend();
     }
   };
 
@@ -29,10 +32,10 @@ const NoChatSelected = () => {
         </p>
       </div>
       <ChatInput
-        loading={loading}
-        disabled={loading}
+        loading={isPending}
+        disabled={isPending}
         value={text}
-        onClick={() => handleCreateConversation(text)}
+        onClick={handleSend}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => handleKeyDown(e)}
       />

@@ -23,20 +23,17 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
-import useAuthStore from '@/modules/auth/store';
-
-export function NavUser({
-  user,
-}: {
+type NavUserProps = {
   user: {
     email: string;
     username: string;
     avatar: string;
   };
-}) {
+  onLogout: () => void;
+};
+
+export function NavUser({ user, onLogout }: NavUserProps) {
   const { isMobile } = useSidebar();
-  // delete token and setUser(null)
-  const { logout } = useAuthStore();
 
   return (
     <SidebarMenu>
@@ -100,7 +97,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout}>
+            <DropdownMenuItem onClick={onLogout}>
               <IconLogout />
               Log out
             </DropdownMenuItem>

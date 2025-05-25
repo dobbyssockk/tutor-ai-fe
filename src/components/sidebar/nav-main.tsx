@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom';
-
 import {
   IconCirclePlusFilled,
   IconTrashFilled,
@@ -13,8 +11,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-
-// ALERT DIALOG
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +22,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+
+import { Link } from 'react-router-dom';
 
 export function NavMain({
   items,

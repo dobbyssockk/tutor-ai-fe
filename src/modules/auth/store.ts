@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { devtools } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
+
 import { User } from './types';
 
 type UserState = {

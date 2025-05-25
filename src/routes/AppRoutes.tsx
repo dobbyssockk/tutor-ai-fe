@@ -1,16 +1,27 @@
-import { Routes, Route } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
+
 import AuthGate from '@/components/AuthGate';
 import PublicGate from '@/components/PublicGate';
+import NoChatSelected from '../components/NoChatSelected';
+import ChatView from '../components/ChatView';
 
 import LoginPage from '../pages/LoginPage';
 import SignUpPage from '../pages/SignUpPage';
 import ChatPage from '../pages/ChatPage';
-import NoChatSelected from '../components/NoChatSelected';
-import ChatView from '../components/ChatView';
+
+import useAuthStore from '@/modules/auth/store';
 
 const AppRoutes = () => {
+  const { token } = useAuthStore();
+
   return (
     <Routes>
+      {/* Redirect from "/" based on auth state */}
+      <Route
+        path="/"
+        element={<Navigate to={token ? '/chat' : '/login'} replace />}
+      />
+
       {/* PUBLIC-only */}
       <Route element={<PublicGate />}>
         <Route path="/login" element={<LoginPage />} />
@@ -25,6 +36,7 @@ const AppRoutes = () => {
         </Route>
       </Route>
 
+      {/* Catch-all for 404 */}
       <Route path="*" element={<p>There's nothing here: 404!</p>} />
     </Routes>
   );

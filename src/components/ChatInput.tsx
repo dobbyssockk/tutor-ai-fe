@@ -1,13 +1,10 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
 
-// shadcn
+import { CornerDownLeft, Loader2 } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ChatInput as ShadcnInput } from '@/components/ui/chat/chat-input';
-
-// icons
-import { CornerDownLeft } from 'lucide-react';
-import { Loader2 } from 'lucide-react';
 
 interface ChatInputProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {

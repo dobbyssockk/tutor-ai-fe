@@ -1,6 +1,7 @@
 import axios from 'axios';
-import useAuthStore from '@/modules/auth/store';
+
 import queryClient from './queryClient';
+import useAuthStore from '@/modules/auth/store';
 
 const BASE_URL = 'http://localhost:3000';
 const customAxios = axios.create({
@@ -19,7 +20,11 @@ customAxios.interceptors.response.use(
   (response) => response,
   (error) => {
     const url = error.config?.url || '';
-    if (error?.response?.status === 401 && !url.endsWith('/login') && !url.endsWith('/signup')) {
+    if (
+      error?.response?.status === 401 &&
+      !url.endsWith('/login') &&
+      !url.endsWith('/signup')
+    ) {
       useAuthStore.getState().logout();
       queryClient.clear();
     }

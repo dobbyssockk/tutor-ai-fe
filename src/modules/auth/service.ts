@@ -1,11 +1,7 @@
-import {
-  CreateUser,
-  LoginUser,
-  AuthResponse,
-  AuthMeResponse,
-} from '@/modules/auth/types';
-import customAxios from '@/lib/axios';
 import { AxiosError } from 'axios';
+
+import customAxios from '@/lib/axios';
+import { AuthMeResponse, AuthResponse, CreateUser, LoginUser } from './types';
 
 export const signUp = async (userData: CreateUser): Promise<AuthResponse> => {
   try {

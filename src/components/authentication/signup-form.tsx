@@ -1,13 +1,15 @@
-import { cn } from '@/lib/utils';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from 'react-router-dom';
-import useSignUp from '@/hooks/useSignUp';
+
+import { cn } from '@/lib/utils';
+import { useSignUp } from '@/modules/auth/hooks/useAuth';
 
 // Validation
 const signUpSchema = z.object({
@@ -99,9 +101,7 @@ export function SignUpForm({
           )}
         </div>
 
-        {error && (
-            <p className="text-red-500 text-sm">{error.message}</p>
-          )}
+        {error && <p className="text-red-500 text-sm">{error.message}</p>}
 
         {status === 'pending' ? (
           <Button type="submit" className="w-full ml-auto gap-1.5" disabled>
