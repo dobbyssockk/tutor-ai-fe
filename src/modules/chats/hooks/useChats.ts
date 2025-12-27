@@ -8,12 +8,30 @@ export const useGetChats = () =>
   useQuery({ queryKey: ['chats'], queryFn: getChats });
 
 export const useCreateChat = () => {
+  const qc = useQueryClient();
   const navigate = useNavigate();
 
   return useMutation({
     mutationFn: createChat,
     onSuccess: (data) => {
       const { chat } = data;
+
+      // Optimistically add the new chat so it appears immediately in the sidebar
+      qc.setQueryData<{ chats: Chat[] }>(['chats'], (old = { chats: [] }) => ({
+        chats: [
+          {
+            id: chat.id,
+            title: chat.title,
+            createdAt: chat.createdAt,
+            updatedAt: chat.updatedAt,
+            userId: chat.userId,
+          },
+          ...old.chats,
+        ],
+      }));
+
+      qc.setQueryData(['chat', chat.id], data);
+
       navigate(`/chat/${chat.id}`);
     },
     onError: (err) => {
