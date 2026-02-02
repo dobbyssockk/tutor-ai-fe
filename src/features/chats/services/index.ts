@@ -19,6 +19,8 @@ export const createChat = async (input: string): Promise<ChatResponse> => {
 export const deleteChat = (chatId: string) =>
   customAxios.delete(`/chats/${chatId}`);
 
+export const deleteAllChats = () => customAxios.delete('/chats');
+
 export const createMessage = async (
   chatId: string,
   input: string

@@ -1,9 +1,6 @@
 import AccountPreviewCard from '@/features/dashboard/components/AccountPreviewCard';
-import AssessmentCard from '@/features/dashboard/components/AssessmentCard';
 import DashboardHeader from '@/features/dashboard/components/DashboardHeader';
 import GoalsSection from '@/features/dashboard/components/GoalsSection';
-import NextStepsCard from '@/features/dashboard/components/NextStepsCard';
-import ProgressCard from '@/features/dashboard/components/ProgressCard';
 
 const DashboardPage = () => {
   return (
@@ -12,16 +9,9 @@ const DashboardPage = () => {
         <DashboardHeader />
         <AccountPreviewCard />
 
-        <section className="grid gap-6 lg:grid-cols-3">
+        <section className="space-y-6">
           <GoalsSection />
-
-          <div className="space-y-6">
-            <ProgressCard />
-            <AssessmentCard />
-          </div>
         </section>
-
-        <NextStepsCard />
       </div>
     </div>
   );

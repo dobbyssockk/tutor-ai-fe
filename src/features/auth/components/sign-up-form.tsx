@@ -24,20 +24,18 @@ import { useSignUp } from '@/features/auth/hooks/useAuth';
 
 // Validation
 const signUpSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Введите корректную электронную почту'),
   displayName: z
     .string()
-    .max(60, 'Display name must be at most 60 characters')
+    .max(60, 'Имя должно быть не длиннее 60 символов')
     .optional(),
   password: z
     .string()
-    .min(6, 'Password must be at least 6 characters')
-    .max(100, 'Password must be at most 100 characters'),
-  acceptTerms: z
-    .boolean()
-    .refine((value) => value === true, {
-      message: 'Please confirm before creating your account.',
-    }),
+    .min(6, 'Пароль должен быть не короче 6 символов')
+    .max(100, 'Пароль должен быть не длиннее 100 символов'),
+  acceptTerms: z.boolean().refine((value) => value === true, {
+    message: 'Подтвердите создание аккаунта.',
+  }),
 });
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
@@ -60,9 +58,10 @@ export function SignUpForm({
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const { mutate, status, error } = useSignUp();
-  const signUp = ({ acceptTerms, ...data }: SignUpFormData) => {
+  const signUp = (data: SignUpFormData) => {
     mutate({
-      ...data,
+      email: data.email,
+      password: data.password,
       displayName: data.displayName?.trim() || undefined,
     });
   };
@@ -82,15 +81,15 @@ export function SignUpForm({
       {...props}
     >
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Create an account</h1>
+        <h1 className="text-2xl font-bold">Создание аккаунта</h1>
         <p className="text-muted-foreground text-sm">
-          Enter your email below to create an account
+          Введите электронную почту, чтобы создать аккаунт
         </p>
       </div>
       <div className="grid gap-6">
         {/* Email */}
         <div className="grid gap-3">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">Электронная почта</Label>
           <Input
             id="email"
             type="email"
@@ -105,24 +104,22 @@ export function SignUpForm({
 
         {/* Display name */}
         <div className="grid gap-3">
-          <Label htmlFor="displayName">Display name (optional)</Label>
+          <Label htmlFor="displayName">Имя (необязательно)</Label>
           <Input
             id="displayName"
             type="text"
             {...register('displayName')}
-            placeholder="Maria"
+            placeholder="Мария"
             aria-invalid={!!errors.displayName}
           />
           {errors.displayName && (
-            <p className="text-red-500 text-sm">
-              {errors.displayName.message}
-            </p>
+            <p className="text-red-500 text-sm">{errors.displayName.message}</p>
           )}
         </div>
 
         {/* Password */}
         <div className="grid gap-3">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">Пароль</Label>
           <Input
             id="password"
             type="password"
@@ -143,13 +140,11 @@ export function SignUpForm({
               {...register('acceptTerms')}
             />
             <Label htmlFor="accept-terms" className="text-sm font-normal">
-              I understand this will create my account.
+              Я подтверждаю создание аккаунта.
             </Label>
           </div>
           {errors.acceptTerms && (
-            <p className="text-red-500 text-sm">
-              {errors.acceptTerms.message}
-            </p>
+            <p className="text-red-500 text-sm">{errors.acceptTerms.message}</p>
           )}
         </div>
 
@@ -159,7 +154,7 @@ export function SignUpForm({
           {status === 'pending' ? (
             <Button type="button" className="w-full ml-auto gap-1.5" disabled>
               <Loader2 className="animate-spin" />
-              Signing up...
+              Создаем аккаунт...
             </Button>
           ) : (
             <Button
@@ -167,24 +162,24 @@ export function SignUpForm({
               className="w-full ml-auto gap-1.5"
               onClick={openConfirm}
             >
-              Sign up
+              Зарегистрироваться
             </Button>
           )}
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Create your account?</AlertDialogTitle>
+              <AlertDialogTitle>Создать аккаунт?</AlertDialogTitle>
               <AlertDialogDescription>
-                We will set up your Tutor AI account with this email.
+                Мы создадим аккаунт Tutor AI с этой электронной почтой.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>Отмена</AlertDialogCancel>
               <AlertDialogAction
                 type="submit"
                 form="sign-up-form"
                 disabled={status === 'pending'}
               >
-                Create account
+                Создать аккаунт
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -192,9 +187,9 @@ export function SignUpForm({
       </div>
 
       <div className="text-center text-sm">
-        Already have an account?{' '}
+        Уже есть аккаунт?{' '}
         <Link className="underline underline-offset-4" to="/signin">
-          Sign in
+          Войти
         </Link>
       </div>
     </form>

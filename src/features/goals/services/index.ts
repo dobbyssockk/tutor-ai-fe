@@ -1,10 +1,5 @@
 import customAxios from '@/shared/lib/axios';
-import {
-  GoalInput,
-  GoalResponse,
-  GoalsResponse,
-  GoalUpdateInput,
-} from '../types';
+import { GoalInput, GoalResponse, GoalsResponse } from '../types';
 
 export const getGoals = async (): Promise<GoalsResponse> => {
   const { data } = await customAxios.get('/goals');
@@ -16,12 +11,14 @@ export const createGoal = async (payload: GoalInput): Promise<GoalResponse> => {
   return data;
 };
 
-export const updateGoal = async (
-  id: string,
-  payload: GoalUpdateInput
-): Promise<GoalResponse> => {
-  const { data } = await customAxios.patch(`/goals/${id}`, payload);
+export const deleteGoal = (id: string) => customAxios.delete(`/goals/${id}`);
+
+export const startGoalTopicLesson = async (
+  goalId: string,
+  topicId: string
+): Promise<{ chatId: string }> => {
+  const { data } = await customAxios.post(
+    `/goals/${goalId}/topics/${topicId}/lesson`
+  );
   return data;
 };
-
-export const deleteGoal = (id: string) => customAxios.delete(`/goals/${id}`);

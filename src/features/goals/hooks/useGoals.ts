@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 
 import {
   createGoal,
   deleteGoal,
   getGoals,
-  updateGoal,
+  startGoalTopicLesson,
 } from '@/features/goals/services';
-import { Goal, GoalInput, GoalUpdateInput, GoalsResponse } from '../types';
+import { GoalInput, GoalsResponse } from '../types';
 
 export const useGoals = () =>
   useQuery({
@@ -20,38 +21,6 @@ export const useCreateGoal = () => {
   return useMutation({
     mutationFn: (payload: GoalInput) => createGoal(payload),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['goals'] });
-    },
-  });
-};
-
-export const useUpdateGoal = () => {
-  const qc = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: GoalUpdateInput }) =>
-      updateGoal(id, payload),
-    onMutate: async ({ id, payload }) => {
-      await qc.cancelQueries({ queryKey: ['goals'] });
-      const previous = qc.getQueryData<GoalsResponse>(['goals']);
-
-      qc.setQueryData<GoalsResponse>(['goals'], (old) => {
-        if (!old) return old;
-        return {
-          goals: old.goals.map((goal: Goal) =>
-            goal.id === id ? { ...goal, ...payload } : goal
-          ),
-        };
-      });
-
-      return { previous };
-    },
-    onError: (_err, _variables, context) => {
-      if (context?.previous) {
-        qc.setQueryData(['goals'], context.previous);
-      }
-    },
-    onSettled: () => {
       qc.invalidateQueries({ queryKey: ['goals'] });
     },
   });
@@ -82,6 +51,23 @@ export const useDeleteGoal = () => {
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ['goals'] });
+    },
+  });
+};
+
+export const useStartGoalTopicLesson = () => {
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: ({ goalId, topicId }: { goalId: string; topicId: string }) =>
+      startGoalTopicLesson(goalId, topicId),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['goals'] });
+      navigate(`/chat/${data.chatId}`);
+    },
+    onError: (err) => {
+      console.error('Start goal topic lesson error:', err);
     },
   });
 };

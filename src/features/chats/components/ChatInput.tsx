@@ -24,19 +24,19 @@ const ChatInput = React.forwardRef<HTMLTextAreaElement, ChatInputProps>(
         <ShadcnInput
           ref={ref}
           className="min-h-14 resize-none rounded-lg !bg-transparent border-0 p-3 shadow-none focus-visible:ring-0"
-          placeholder="Type your message here..."
+          placeholder="Введите сообщение..."
           {...props}
         />
 
         <div className="flex items-center p-3 pt-2">
           {loading ? (
             <Button size="sm" className="ml-auto gap-1.5" disabled>
-              Getting response
+              Получаем ответ
               <Loader2 className="animate-spin" />
             </Button>
           ) : (
             <Button size="sm" className="ml-auto gap-1.5" onClick={onClick}>
-              Send message
+              Отправить
               <CornerDownLeft className="size-3.5" />
             </Button>
           )}

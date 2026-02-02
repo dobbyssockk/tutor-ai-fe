@@ -20,35 +20,35 @@ const DashboardHeader = () => {
   return (
     <header className="flex flex-wrap items-center justify-between gap-4">
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">Welcome back</p>
+        <p className="text-sm text-muted-foreground">С возвращением</p>
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">
-            Tutor AI Dashboard
+            Панель Tutor AI
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Track your progress, set goals, and pick up where you left off.
+            Ставьте цели и отслеживайте прогресс.
           </p>
         </div>
       </div>
       <div className="flex items-center gap-3">
         <Button asChild variant="outline">
-          <Link to="/chat">Go to chat</Link>
+          <Link to="/chat">Перейти к чату</Link>
         </Button>
-        <Button disabled>Start assessment</Button>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="ghost">Sign out</Button>
+            <Button variant="ghost">Выйти</Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Sign out of Tutor AI?</AlertDialogTitle>
+              <AlertDialogTitle>Выйти из Tutor AI?</AlertDialogTitle>
               <AlertDialogDescription>
-                You can sign back in at any time. Unsaved changes will be lost.
+                Вы сможете войти снова в любое время. Несохраненные изменения
+                будут потеряны.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={signOut}>Sign out</AlertDialogAction>
+              <AlertDialogCancel>Отмена</AlertDialogCancel>
+              <AlertDialogAction onClick={signOut}>Выйти</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

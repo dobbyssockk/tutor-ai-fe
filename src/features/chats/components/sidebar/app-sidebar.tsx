@@ -19,12 +19,12 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   user: UserType;
   navMainItems: NavItem[];
   onDeleteItem: (id: string) => void;
+  onDeleteAll?: () => void;
   onSignOut: () => void;
 };
 
 type UserType = {
   email: string;
-  username: string;
   displayName?: string | null;
   avatar: string;
 };
@@ -40,6 +40,7 @@ export function AppSidebar({
   user,
   navMainItems,
   onDeleteItem,
+  onDeleteAll,
   onSignOut,
   ...props
 }: AppSidebarProps) {
@@ -55,7 +56,7 @@ export function AppSidebar({
               <Link to="/dashboard">
                 <IconRobot className="!size-5" />
                 <span className="text-base font-semibold tracking-wide">
-                  Go back to dashboard
+                  Назад к панели
                 </span>
               </Link>
             </SidebarMenuButton>
@@ -63,7 +64,7 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navMainItems} onClick={onDeleteItem} />
+        <NavMain items={navMainItems} onClick={onDeleteItem} onDeleteAll={onDeleteAll} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} onSignOut={onSignOut} />

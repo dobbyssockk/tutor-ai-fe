@@ -30,7 +30,6 @@ import {
 type NavUserProps = {
   user: {
     email: string;
-    username: string;
     displayName?: string | null;
     avatar: string;
   };
@@ -39,7 +38,7 @@ type NavUserProps = {
 
 export function NavUser({ user, onSignOut }: NavUserProps) {
   const { isMobile } = useSidebar();
-  const displayName = user.displayName || user.username;
+  const displayName = user.displayName || user.email;
   const avatarInitial = displayName?.[0]?.toUpperCase() ?? '?';
 
   return (
@@ -93,21 +92,21 @@ export function NavUser({ user, onSignOut }: NavUserProps) {
               <AlertDialogTrigger asChild>
                 <DropdownMenuItem onSelect={(event) => event.preventDefault()}>
                   <IconLogout />
-                  Sign out
+                  Выйти
                 </DropdownMenuItem>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Sign out of Tutor AI?</AlertDialogTitle>
+                  <AlertDialogTitle>Выйти из Tutor AI?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    You can sign back in at any time. Unsaved changes will be
-                    lost.
+                    Вы сможете войти снова в любое время. Несохраненные изменения
+                    будут потеряны.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>Отмена</AlertDialogCancel>
                   <AlertDialogAction onClick={onSignOut}>
-                    Sign out
+                    Выйти
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

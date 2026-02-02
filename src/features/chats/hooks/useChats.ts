@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
-import { createChat, deleteChat, getChats } from '@/features/chats/services';
+import { createChat, deleteAllChats, deleteChat, getChats } from '@/features/chats/services';
 import { Chat } from '@/features/chats/types';
 
 export const useGetChats = () =>
@@ -39,6 +39,24 @@ export const useCreateChat = () => {
     },
   });
 };
+
+export const useDeleteAllChats = () => {
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: deleteAllChats,
+    onSuccess: () => {
+      qc.setQueryData(['chats'], { chats: [] });
+      qc.invalidateQueries({ queryKey: ['chats'] });
+      navigate('/chat');
+    },
+    onError: (err) => {
+      console.error(err);
+    },
+  });
+};
+
 
 export const useDeleteChat = () => {
   const qc = useQueryClient();

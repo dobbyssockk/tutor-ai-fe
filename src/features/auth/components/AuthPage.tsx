@@ -29,34 +29,34 @@ const AuthPage = ({ children }: { children: React.JSX.Element }) => {
             Tutor AI
           </h1>
           <p className="text-base leading-relaxed">
-            is an intelligent chatbot that guides you with hints and
-            explanations, helping you find solutions independently. If needed,
-            it can clarify complex concepts or provide answers, but the focus is
-            on your learning.
+            это интеллектуальный чат-тьютор с панелью обучения: вы получаете
+            программы по дисциплинам, управляете целями и отслеживаете прогресс.
+            Можно задать собственные инструкции для тьютора, чтобы он объяснял в
+            нужном стиле. При необходимости он пояснит сложные темы или даст
+            ответы, но фокус — на вашем обучении.
           </p>
           <div>
-            <h2 className="mb-3 text-xl font-semibold">How it works?</h2>
+            <h2 className="mb-3 text-xl font-semibold">Как это работает?</h2>
             <ul className="list-disc space-y-2 pl-5 text-left text-sm">
               <li>
-                <span className="font-medium">Ask a question</span> - Describe
-                the difficulty you're facing.
+                <span className="font-medium">Задайте вопрос</span> — опишите,
+                с чем возникли сложности.
               </li>
               <li>
-                <span className="font-medium">Receive hints</span> - The bot
-                will suggest logical directions, clues, and key ideas.
+                <span className="font-medium">Получите подсказки</span> — бот
+                предложит направления, наводки и ключевые идеи.
               </li>
               <li>
-                <span className="font-medium">Work on the solution</span> - Try
-                applying your knowledge and figuring it out independently.
+                <span className="font-medium">Решайте задачу</span> — попробуйте
+                применить знания и дойти до ответа самостоятельно.
               </li>
               <li>
-                <span className="font-medium">Get an explanation</span> - If you
-                get stuck, the bot will help you understand mistakes and guide
-                you to the right answer.
+                <span className="font-medium">Получите объяснение</span> — если
+                застряли, бот разберет ошибки и подскажет верный ход.
               </li>
               <li>
-                <span className="font-medium">Save your progress</span> - All
-                your chats are saved, so you can revisit them anytime.
+                <span className="font-medium">Сохраняйте прогресс</span> — все
+                чаты сохраняются, и вы можете возвращаться к ним в любое время.
               </li>
             </ul>
           </div>

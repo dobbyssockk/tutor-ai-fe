@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import useAuthStore from '@/features/auth/store';
 import {
@@ -67,6 +68,7 @@ export const useUpdateMe = () => {
     onSuccess: (data) => {
       setUser(data.user);
       qc.setQueryData(['me'], data.user);
+      toast.success('Изменения сохранены');
     },
     onError: (err) => {
       console.error('Update profile error:', err);

@@ -27,10 +27,10 @@ const AccountPreviewCard = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [instructions, setInstructions] = useState('');
   const createdAtLabel = user?.createdAt
-    ? new Date(user.createdAt).toLocaleDateString()
+    ? new Date(user.createdAt).toLocaleDateString('ru-RU')
     : '-';
   const displayNameValue = displayName.trim();
-  const displayNameLabel = displayNameValue || user?.username || 'Anonymous';
+  const displayNameLabel = displayNameValue || user?.displayName;
 
   useEffect(() => {
     setDisplayName(user?.displayName ?? '');
@@ -49,14 +49,20 @@ const AccountPreviewCard = () => {
       <details className="group">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
           <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">
-              Account preview
-            </p>
+            <p className="text-sm font-medium text-muted-foreground">Профиль</p>
             <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="font-semibold">{displayNameLabel}</span>
-              <span className="text-muted-foreground">
-                {user?.email ?? '-'}
-              </span>
+              {displayNameLabel ? (
+                <>
+                  <span className="font-semibold">{displayNameLabel}</span>
+                  <span className="text-muted-foreground">
+                    {user?.email ?? 'Email not set'}
+                  </span>
+                </>
+              ) : (
+                <span className="font-semibold">
+                  {user?.email ?? 'Email not set'}
+                </span>
+              )}
             </div>
           </div>
           <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform group-open:rotate-180" />
@@ -65,14 +71,14 @@ const AccountPreviewCard = () => {
         <div className="mt-6 space-y-6">
           <div>
             <p className="text-sm font-medium text-muted-foreground">
-              Account details
+              Детали аккаунта
             </p>
             <div className="mt-3 grid gap-3 rounded-lg border bg-background/60 p-4 text-sm">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">
-                  Display name
+                  Отображаемое имя
                   <span className="ml-1 text-xs text-muted-foreground">
-                    (used in chat)
+                    (используется в чате)
                   </span>
                 </span>
                 <div className="flex items-center gap-2">
@@ -81,9 +87,9 @@ const AccountPreviewCard = () => {
                       id="display-name"
                       value={displayName}
                       onChange={(event) => setDisplayName(event.target.value)}
-                      placeholder="Your name"
+                      placeholder="Ваше имя"
                       className="h-8 w-40 text-sm"
-                      aria-label="Display name"
+                      aria-label="Отображаемое имя"
                     />
                   ) : (
                     <span
@@ -93,7 +99,7 @@ const AccountPreviewCard = () => {
                           : 'text-muted-foreground'
                       }
                     >
-                      {displayNameValue || 'Not set'}
+                      {displayNameValue || 'Не задано'}
                     </span>
                   )}
                   <Button
@@ -102,8 +108,8 @@ const AccountPreviewCard = () => {
                     size="icon"
                     aria-label={
                       isEditingName
-                        ? 'Hide display name editor'
-                        : 'Edit display name'
+                        ? 'Скрыть редактирование имени'
+                        : 'Редактировать имя'
                     }
                     onClick={() => setIsEditingName((prev) => !prev)}
                   >
@@ -112,15 +118,11 @@ const AccountPreviewCard = () => {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Username</span>
-                <span className="font-medium">{user?.username ?? '-'}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Email</span>
+                <span className="text-muted-foreground">Электронная почта</span>
                 <span className="font-medium">{user?.email ?? '-'}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Member since</span>
+                <span className="text-muted-foreground">Зарегистрирован</span>
                 <span className="font-medium">{createdAtLabel}</span>
               </div>
             </div>
@@ -128,17 +130,17 @@ const AccountPreviewCard = () => {
 
           <div className="space-y-2">
             <Label htmlFor="profile-instructions">
-              How should your tutor help?
+              Как должен помогать тьютор?
             </Label>
             <Textarea
               id="profile-instructions"
-              placeholder="Explain step-by-step, ask me questions, keep answers short"
+              placeholder="Объясняй пошагово, задавай вопросы, отвечай кратко"
               className="text-sm"
               value={instructions}
               onChange={(event) => setInstructions(event.target.value)}
             />
             <p className="text-xs text-muted-foreground">
-              We will use this to guide how your tutor responds to you.
+              Это поможет настроить стиль ответов вашего тьютора.
             </p>
           </div>
 
@@ -153,7 +155,7 @@ const AccountPreviewCard = () => {
                 })
               }
             >
-              {isPending ? 'Saving...' : 'Save changes'}
+              {isPending ? 'Сохраняем...' : 'Сохранить изменения'}
             </Button>
           </div>
 
@@ -161,36 +163,36 @@ const AccountPreviewCard = () => {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
                 <p className="text-sm font-medium text-destructive">
-                  Delete account
+                  Удалить аккаунт
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  This permanently removes your profile, goals, and chats.
+                  Это навсегда удалит профиль, цели и чаты.
                 </p>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" disabled={isDeleting}>
-                    {isDeleting ? 'Deleting...' : 'Delete account'}
+                    {isDeleting ? 'Удаляем...' : 'Удалить аккаунт'}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                    <AlertDialogTitle>Удалить аккаунт?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. Your chats, goals, and
-                      profile will be permanently removed.
+                      Это действие нельзя отменить. Ваши чаты, цели и профиль
+                      будут удалены навсегда.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel disabled={isDeleting}>
-                      Cancel
+                      Отмена
                     </AlertDialogCancel>
                     <AlertDialogAction
                       className="bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20"
                       onClick={() => deleteMe()}
                       disabled={isDeleting}
                     >
-                      Delete account
+                      Удалить аккаунт
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

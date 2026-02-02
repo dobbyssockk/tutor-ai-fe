@@ -13,11 +13,11 @@ import { useSignIn } from '@/features/auth/hooks/useAuth';
 
 // Validation
 const signInSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Введите корректную электронную почту'),
   password: z
     .string()
-    .min(6, 'Password must be at least 6 characters')
-    .max(100, 'Password must be at most 100 characters'),
+    .min(6, 'Пароль должен быть не короче 6 символов')
+    .max(100, 'Пароль должен быть не длиннее 100 символов'),
 });
 
 type SignInFormData = z.infer<typeof signInSchema>;
@@ -47,15 +47,15 @@ export function SignInForm({
       {...props}
     >
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Sign in to your account</h1>
+        <h1 className="text-2xl font-bold">Вход в аккаунт</h1>
         <p className="text-muted-foreground text-sm">
-          Enter your email below to sign in to your account
+          Введите электронную почту, чтобы войти в аккаунт
         </p>
       </div>
       <div className="grid gap-6">
         {/* Email */}
         <div className="grid gap-3">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">Электронная почта</Label>
           <Input
             id="email"
             type="email"
@@ -70,7 +70,7 @@ export function SignInForm({
 
         {/* Password */}
         <div className="grid gap-3">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">Пароль</Label>
           <Input
             id="password"
             type="password"
@@ -87,19 +87,19 @@ export function SignInForm({
         {status === 'pending' ? (
           <Button type="submit" className="w-full ml-auto gap-1.5" disabled>
             <Loader2 className="animate-spin" />
-            Signing in...
+            Входим...
           </Button>
         ) : (
           <Button type="submit" className="w-full ml-auto gap-1.5">
-            Sign in
+            Войти
           </Button>
         )}
       </div>
 
       <div className="text-center text-sm">
-        Don&apos;t have an account?{' '}
+        Нет аккаунта?{' '}
         <Link className="underline underline-offset-4" to="/signup">
-          Sign up
+          Зарегистрироваться
         </Link>
       </div>
     </form>

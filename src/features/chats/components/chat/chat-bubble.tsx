@@ -70,7 +70,7 @@ const ChatBubbleAvatar: React.FC<ChatBubbleAvatarProps> = ({
   className,
 }) => (
   <Avatar className={className}>
-    <AvatarImage src={src} alt="Avatar" />
+    <AvatarImage src={src} alt="Аватар" />
     <AvatarFallback>{fallback}</AvatarFallback>
   </Avatar>
 );
@@ -80,8 +80,9 @@ const chatBubbleMessageVariants = cva("p-4", {
   variants: {
     variant: {
       received:
-        "bg-secondary text-secondary-foreground rounded-r-lg rounded-tl-lg",
-      sent: "bg-primary text-primary-foreground rounded-l-lg rounded-tr-lg",
+        "bg-secondary text-secondary-foreground rounded-r-lg rounded-tl-lg whitespace-normal",
+      sent:
+        "bg-primary text-primary-foreground rounded-l-lg rounded-tr-lg whitespace-pre-wrap",
     },
     layout: {
       default: "",
@@ -111,7 +112,7 @@ const ChatBubbleMessage = React.forwardRef<
     <div
       className={cn(
         chatBubbleMessageVariants({ variant, layout, className }),
-        "break-words max-w-full whitespace-pre-wrap",
+        "break-words max-w-full",
       )}
       ref={ref}
       {...props}
@@ -199,8 +200,6 @@ export {
   ChatBubbleAvatar,
   ChatBubbleMessage,
   ChatBubbleTimestamp,
-  chatBubbleVariant,
-  chatBubbleMessageVariants,
   ChatBubbleAction,
   ChatBubbleActionWrapper,
 };

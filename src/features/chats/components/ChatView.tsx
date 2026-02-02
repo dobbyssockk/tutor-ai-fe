@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import Error from '@/shared/components/Error';
@@ -26,6 +26,11 @@ const ChatView = () => {
     isError,
   } = useGetChat(chatId);
   const { mutate, isPending } = useSendMessage(chatId!);
+  const [scrollKey, setScrollKey] = useState(0);
+
+  useEffect(() => {
+    setScrollKey((prev) => prev + 1);
+  }, [chatId]);
 
   if (isChatLoading) return <Loader />;
   if (isError) return <Error />;
@@ -45,16 +50,18 @@ const ChatView = () => {
   };
 
   return (
-    <>
-      <div>
+    <div className="relative flex h-full flex-col">
+      <div className="flex-1 min-h-0">
         <ChatMessageList
           className="pb-40 max-w-4xl mx-auto"
           childPadding={'py-5'}
+          forceScrollOnChange
+          scrollKey={`${chatId}-${scrollKey}-${chatData.chat.messages.length}-${isPending}`}
         >
           {chatData.chat.messages.length === 1 ? (
             <>
               <ChatBubble variant="sent">
-                <ChatBubbleAvatar fallback="US" />
+                <ChatBubbleAvatar fallback="Я" />
                 <ChatBubbleMessage variant="sent">
                   {chatData.chat.messages[0].outputText}
                 </ChatBubbleMessage>
@@ -71,13 +78,9 @@ const ChatView = () => {
               const variant = isUser ? 'sent' : 'received';
               return (
                 <ChatBubble key={id} variant={variant}>
-                  <ChatBubbleAvatar fallback={isUser ? 'US' : 'AI'} />
+                  <ChatBubbleAvatar fallback={isUser ? 'Я' : 'ИИ'} />
                   <ChatBubbleMessage variant={variant}>
-                    {isUser ? (
-                      outputText
-                    ) : (
-                      <MarkdownRenderer text={outputText} />
-                    )}
+                    <MarkdownRenderer text={outputText} />
                   </ChatBubbleMessage>
                 </ChatBubble>
               );
@@ -86,7 +89,7 @@ const ChatView = () => {
 
           {isPending ? (
             <ChatBubble key="loading" variant="received">
-              <ChatBubbleAvatar fallback="AI" />
+              <ChatBubbleAvatar fallback="ИИ" />
               <ChatBubbleMessage isLoading={isPending} />
             </ChatBubble>
           ) : null}
@@ -101,7 +104,7 @@ const ChatView = () => {
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => handleKeyDown(e)}
       />
-    </>
+    </div>
   );
 };
 

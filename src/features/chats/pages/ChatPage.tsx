@@ -14,9 +14,9 @@ const ChatPage = () => {
       <SidebarContainer variant="inset" />
 
       <SidebarInset className="relative flex flex-col h-screen overflow-hidden">
-        <SiteHeader title={data?.chat.title || 'Chat'} />
+        <SiteHeader title={data?.chat.title || 'Чат'} />
 
-        <div className="@container/main w-full flex-1 overflow-y-auto">
+        <div className="@container/main w-full flex-1 min-h-0 overflow-hidden">
           {/* <NoChatSelected /> or <ChatView /> if chat selected */}
           <Outlet />
         </div>

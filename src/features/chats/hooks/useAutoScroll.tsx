@@ -1,5 +1,5 @@
 // @hidden
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ScrollState {
   isAtBottom: boolean;
@@ -46,7 +46,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}) {
       } else {
         scrollRef.current.scrollTo({
           top: targetScrollTop,
-          behavior: smooth ? "smooth" : "auto",
+          behavior: smooth ? 'smooth' : 'auto',
         });
       }
 
@@ -75,8 +75,8 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}) {
     const element = scrollRef.current;
     if (!element) return;
 
-    element.addEventListener("scroll", handleScroll, { passive: true });
-    return () => element.removeEventListener("scroll", handleScroll);
+    element.addEventListener('scroll', handleScroll, { passive: true });
+    return () => element.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
   useEffect(() => {
@@ -129,7 +129,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}) {
     scrollRef,
     isAtBottom: scrollState.isAtBottom,
     autoScrollEnabled: scrollState.autoScrollEnabled,
-    scrollToBottom: () => scrollToBottom(false),
+    scrollToBottom,
     disableAutoScroll,
   };
 }
