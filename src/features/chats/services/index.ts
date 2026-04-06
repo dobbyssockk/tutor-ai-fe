@@ -1,5 +1,10 @@
 import customAxios from '@/shared/lib/axios';
-import { ChatResponse, ChatsResponse, MessageResponse } from '../types';
+import {
+  ChatItemResponse,
+  ChatResponse,
+  ChatsResponse,
+  MessageResponse,
+} from '../types';
 
 export const getChats = async (): Promise<ChatsResponse> => {
   const { data } = await customAxios.get('/chats');
@@ -20,6 +25,14 @@ export const deleteChat = (chatId: string) =>
   customAxios.delete(`/chats/${chatId}`);
 
 export const deleteAllChats = () => customAxios.delete('/chats');
+
+export const renameChat = async (
+  chatId: string,
+  title: string
+): Promise<ChatItemResponse> => {
+  const { data } = await customAxios.patch(`/chats/${chatId}`, { title });
+  return data;
+};
 
 export const createMessage = async (
   chatId: string,

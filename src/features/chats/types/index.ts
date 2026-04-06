@@ -29,6 +29,10 @@ export type ChatResponse = {
   };
 };
 
+export type ChatItemResponse = {
+  chat: Chat;
+};
+
 export type MessageResponse = {
   user: {
     id: string;

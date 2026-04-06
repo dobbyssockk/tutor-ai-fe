@@ -5,6 +5,7 @@ import {
   AssessmentAttemptResponse,
   AssessmentCreateResponse,
   AssessmentListResponse,
+  AssessmentReviewChatResponse,
   AssessmentResultResponse,
   AssessmentSubmitResponse,
 } from '@/features/assessments/types';
@@ -46,6 +47,15 @@ export const getAssessmentResult = async (
 ): Promise<AssessmentResultResponse> => {
   const { data } = await customAxios.get(
     `/assessments/attempts/${attemptId}/results`
+  );
+  return data;
+};
+
+export const createAssessmentReviewChat = async (
+  attemptId: string
+): Promise<AssessmentReviewChatResponse> => {
+  const { data } = await customAxios.post(
+    `/assessments/attempts/${attemptId}/review-chat`
   );
   return data;
 };

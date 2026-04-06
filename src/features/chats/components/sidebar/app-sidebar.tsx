@@ -19,6 +19,7 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   user: UserType;
   navMainItems: NavItem[];
   onDeleteItem: (id: string) => void;
+  onRenameItem: (id: string, title: string) => void;
   onDeleteAll?: () => void;
   onSignOut: () => void;
 };
@@ -40,6 +41,7 @@ export function AppSidebar({
   user,
   navMainItems,
   onDeleteItem,
+  onRenameItem,
   onDeleteAll,
   onSignOut,
   ...props
@@ -64,7 +66,12 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navMainItems} onClick={onDeleteItem} onDeleteAll={onDeleteAll} />
+        <NavMain
+          items={navMainItems}
+          onClick={onDeleteItem}
+          onRename={onRenameItem}
+          onDeleteAll={onDeleteAll}
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} onSignOut={onSignOut} />

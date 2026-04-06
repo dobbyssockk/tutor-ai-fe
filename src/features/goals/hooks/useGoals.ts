@@ -8,10 +8,11 @@ import {
   startGoalTopicLesson,
 } from '@/features/goals/services';
 import { GoalInput, GoalsResponse } from '../types';
+import { queryKeys } from '@/shared/lib/queryKeys';
 
 export const useGoals = () =>
   useQuery({
-    queryKey: ['goals'],
+    queryKey: queryKeys.goals.all,
     queryFn: getGoals,
   });
 
@@ -21,7 +22,7 @@ export const useCreateGoal = () => {
   return useMutation({
     mutationFn: (payload: GoalInput) => createGoal(payload),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['goals'] });
+      qc.invalidateQueries({ queryKey: queryKeys.goals.all });
     },
   });
 };
@@ -32,10 +33,10 @@ export const useDeleteGoal = () => {
   return useMutation({
     mutationFn: (id: string) => deleteGoal(id),
     onMutate: async (id: string) => {
-      await qc.cancelQueries({ queryKey: ['goals'] });
-      const previous = qc.getQueryData<GoalsResponse>(['goals']);
+      await qc.cancelQueries({ queryKey: queryKeys.goals.all });
+      const previous = qc.getQueryData<GoalsResponse>(queryKeys.goals.all);
 
-      qc.setQueryData<GoalsResponse>(['goals'], (old) => {
+      qc.setQueryData<GoalsResponse>(queryKeys.goals.all, (old) => {
         if (!old) return old;
         return {
           goals: old.goals.filter((goal) => goal.id !== id),
@@ -46,11 +47,11 @@ export const useDeleteGoal = () => {
     },
     onError: (_err, _id, context) => {
       if (context?.previous) {
-        qc.setQueryData(['goals'], context.previous);
+        qc.setQueryData(queryKeys.goals.all, context.previous);
       }
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: ['goals'] });
+      qc.invalidateQueries({ queryKey: queryKeys.goals.all });
     },
   });
 };
@@ -63,7 +64,7 @@ export const useStartGoalTopicLesson = () => {
     mutationFn: ({ goalId, topicId }: { goalId: string; topicId: string }) =>
       startGoalTopicLesson(goalId, topicId),
     onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ['goals'] });
+      qc.invalidateQueries({ queryKey: queryKeys.goals.all });
       navigate(`/chat/${data.chatId}`);
     },
     onError: (err) => {

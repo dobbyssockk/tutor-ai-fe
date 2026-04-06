@@ -32,6 +32,7 @@ export type AssessmentQuestion = {
   id: string;
   prompt: string;
   options: string[];
+  correctAnswer?: string;
 };
 
 export type AssessmentAttempt = {
@@ -59,8 +60,12 @@ export type AssessmentSubmitResponse = {
     totalCount: number;
     completedAt: string;
   };
-  chatId: string;
+  chatId: string | null;
   mistakesCount: number;
+};
+
+export type AssessmentReviewChatResponse = {
+  chatId: string;
 };
 
 export type AssessmentCreateResponse = {
@@ -81,7 +86,7 @@ export type AssessmentResult = {
   correctCount: number;
   totalCount: number;
   completedAt: string;
-  chatId: string;
+  chatId: string | null;
   mistakesCount: number;
   goalId?: string | null;
   goalTopicId?: string | null;

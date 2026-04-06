@@ -9,50 +9,41 @@ import {
   signUp,
   updateMe,
 } from '@/features/auth/services';
+import { queryKeys } from '@/shared/lib/queryKeys';
+import { AuthResponse } from '@/features/auth/types';
 
-export const useSignIn = () => {
+const useAuthMutation = <TPayload,>(
+  mutationFn: (payload: TPayload) => Promise<AuthResponse>,
+  errorLabel: string
+) => {
   const qc = useQueryClient();
   const { setToken, setUser } = useAuthStore();
 
   return useMutation({
-    mutationFn: signIn,
+    mutationFn,
     onSuccess: (data) => {
       const { user, token } = data;
       setToken(token);
       setUser(user);
-
-      qc.setQueryData(['me'], user);
+      qc.setQueryData(queryKeys.auth.me, user);
     },
     onError: (err) => {
-      console.error('Sign-in error:', err);
+      console.error(`${errorLabel}:`, err);
     },
   });
 };
 
-export const useSignUp = () => {
-  const qc = useQueryClient();
-  const { setToken, setUser } = useAuthStore();
+export const useSignIn = () =>
+  useAuthMutation(signIn, 'Sign-in error');
 
-  return useMutation({
-    mutationFn: signUp,
-    onSuccess: (data) => {
-      const { user, token } = data;
-      setToken(token);
-      setUser(user);
-
-      qc.setQueryData(['me'], user);
-    },
-    onError: (err) => {
-      console.error('Sign up error:', err);
-    },
-  });
-};
+export const useSignUp = () =>
+  useAuthMutation(signUp, 'Sign up error');
 
 export const useFetchMe = () => {
   const { token } = useAuthStore();
 
   return useQuery({
-    queryKey: ['me'],
+    queryKey: queryKeys.auth.me,
     queryFn: fetchMe,
     enabled: !!token,
     retry: false,
@@ -67,7 +58,7 @@ export const useUpdateMe = () => {
     mutationFn: updateMe,
     onSuccess: (data) => {
       setUser(data.user);
-      qc.setQueryData(['me'], data.user);
+      qc.setQueryData(queryKeys.auth.me, data.user);
       toast.success('Изменения сохранены');
     },
     onError: (err) => {

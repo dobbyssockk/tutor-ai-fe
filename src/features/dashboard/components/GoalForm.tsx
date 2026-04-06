@@ -51,15 +51,22 @@ const GoalForm = ({ isCreating, onCreateGoal }: GoalFormProps) => {
       return;
     }
 
+    const payload: GoalInput = {
+      title: trimmedTitle,
+      description: trimmedDetails,
+      minutesPerDay: minutes,
+    };
+
+    if (trimmedCurrentLevel) {
+      payload.currentLevel = trimmedCurrentLevel;
+    }
+
+    if (trimmedTargetLevel) {
+      payload.targetLevel = trimmedTargetLevel;
+    }
+
     onCreateGoal(
-      {
-        title: trimmedTitle,
-        description: trimmedDetails || undefined,
-        currentLevel: trimmedCurrentLevel || undefined,
-        targetLevel: trimmedTargetLevel || undefined,
-        minutesPerDay: minutes,
-        notes: undefined,
-      },
+      payload,
       { onSuccess: resetForm }
     );
   };

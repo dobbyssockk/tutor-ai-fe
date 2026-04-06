@@ -1,11 +1,17 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from '@/shared/components/ui/button';
-import { useAssessmentResult } from '@/features/assessments/hooks/useAssessments';
+import {
+  useAssessmentResult,
+  useCreateAssessmentReviewChat,
+} from '@/features/assessments/hooks/useAssessments';
 
 const AssessmentResultPage = () => {
   const { attemptId } = useParams();
+  const navigate = useNavigate();
   const { data, isLoading } = useAssessmentResult(attemptId);
+  const { mutate: createReviewChat, isPending: isCreatingReviewChat } =
+    useCreateAssessmentReviewChat(attemptId);
 
   if (isLoading) {
     return (
@@ -34,6 +40,18 @@ const AssessmentResultPage = () => {
   }
 
   const reviewItems = result.review ?? [];
+  const handleOpenReviewChat = () => {
+    if (result.chatId) {
+      navigate(`/chat/${result.chatId}`);
+      return;
+    }
+
+    createReviewChat(undefined, {
+      onSuccess: (response) => {
+        navigate(`/chat/${response.chatId}`);
+      },
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -65,8 +83,11 @@ const AssessmentResultPage = () => {
               Тьютор подготовил разбор по вопросам, где были ошибки.
             </p>
             <div className="mt-4 flex flex-wrap justify-end gap-2">
-              <Button asChild>
-                <Link to={`/chat/${result.chatId}`}>Разобрать в чате</Link>
+              <Button
+                disabled={isCreatingReviewChat}
+                onClick={handleOpenReviewChat}
+              >
+                {isCreatingReviewChat ? 'Открываем...' : 'Разобрать в чате'}
               </Button>
             </div>
           </div>

@@ -1,15 +1,113 @@
-import ReactMarkdown from 'react-markdown';
+import { useMemo } from 'react';
+import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import atomDark from 'react-syntax-highlighter/dist/esm/styles/prism/atom-dark';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+
+import InteractiveRenderer from '@/shared/components/interactive/InteractiveRenderer';
+import {
+  InteractiveSpec,
+  parseInteractiveSpec,
+} from '@/shared/components/interactive/interactive-spec';
 
 interface MarkdownRendererProps {
   text: string;
 }
 
-const MarkdownRenderer = ({ text }: MarkdownRendererProps) => (
-  <div className="space-y-2">
-    <ReactMarkdown
-      components={{
+type RenderBlock =
+  | {
+      kind: 'markdown';
+      content: string;
+    }
+  | {
+      kind: 'interactive';
+      spec: InteractiveSpec;
+    };
+
+const INTERACTIVE_BLOCK_RE = /```interactive\s*([\s\S]*?)```/gi;
+
+const normalizeMathDelimiters = (input: string) => {
+  let output = input;
+
+  output = output.replace(
+    /\[\s*(\\begin\{cases\}[\s\S]*?\\end\{cases\})\s*\]/g,
+    (_, block: string) => `$$${block}$$`
+  );
+
+  output = output.replace(/\\\[\s*([\s\S]*?)\s*\\\]/g, (_, expr: string) => {
+    return `$$${expr}$$`;
+  });
+
+  output = output.replace(/\\\(\s*([\s\S]*?)\s*\\\)/g, (_, expr: string) => {
+    return `$${expr}$`;
+  });
+
+  return output;
+};
+
+const markdownUrlTransform = (url: string, key: string) => {
+  if (
+    key === 'src' &&
+    /^data:image\/(svg\+xml|png|jpeg|jpg|webp)(;|,)/i.test(url)
+  ) {
+    return url;
+  }
+  return defaultUrlTransform(url);
+};
+
+const splitRenderBlocks = (content: string): RenderBlock[] => {
+  const blocks: RenderBlock[] = [];
+  let cursor = 0;
+
+  const matches = content.matchAll(INTERACTIVE_BLOCK_RE);
+  for (const match of matches) {
+    const fullMatch = match[0];
+    const jsonBody = match[1];
+    const start = match.index ?? 0;
+    const end = start + fullMatch.length;
+
+    if (start > cursor) {
+      const before = content.slice(cursor, start);
+      if (before.trim()) {
+        blocks.push({ kind: 'markdown', content: before });
+      }
+    }
+
+    if (jsonBody) {
+      const spec = parseInteractiveSpec(jsonBody);
+      if (spec) {
+        blocks.push({ kind: 'interactive', spec });
+      } else {
+        blocks.push({ kind: 'markdown', content: fullMatch });
+      }
+    } else {
+      blocks.push({ kind: 'markdown', content: fullMatch });
+    }
+
+    cursor = end;
+  }
+
+  if (cursor < content.length) {
+    const tail = content.slice(cursor);
+    if (tail.trim()) {
+      blocks.push({ kind: 'markdown', content: tail });
+    }
+  }
+
+  if (!blocks.length) {
+    return [{ kind: 'markdown', content }];
+  }
+
+  return blocks;
+};
+
+const MarkdownBlock = ({ text }: { text: string }) => (
+  <ReactMarkdown
+    remarkPlugins={[remarkMath]}
+    rehypePlugins={[rehypeKatex]}
+    urlTransform={markdownUrlTransform}
+    components={{
       p({ children, ...props }) {
         if (String(children).trim().length === 0) {
           return null;
@@ -95,11 +193,26 @@ const MarkdownRenderer = ({ text }: MarkdownRendererProps) => (
           </code>
         );
       },
-      }}
-    >
-      {text}
-    </ReactMarkdown>
-  </div>
+    }}
+  >
+    {normalizeMathDelimiters(text)}
+  </ReactMarkdown>
 );
+
+const MarkdownRenderer = ({ text }: MarkdownRendererProps) => {
+  const blocks = useMemo(() => splitRenderBlocks(text), [text]);
+
+  return (
+    <div className="space-y-3 [&_.katex-display]:my-2 [&_.katex-display]:max-w-full [&_.katex-display]:overflow-x-auto [&_.katex-display]:overflow-y-hidden [&_.katex-display]:py-1 [&_.katex-display>span]:inline-block [&_.katex-display>span]:min-w-max">
+      {blocks.map((block, index) => {
+        if (block.kind === 'interactive') {
+          return <InteractiveRenderer key={`interactive-${index}`} spec={block.spec} />;
+        }
+
+        return <MarkdownBlock key={`markdown-${index}`} text={block.content} />;
+      })}
+    </div>
+  );
+};
 
 export default MarkdownRenderer;

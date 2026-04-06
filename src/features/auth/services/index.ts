@@ -3,28 +3,27 @@ import { AxiosError } from 'axios';
 import customAxios from '@/shared/lib/axios';
 import { AuthMeResponse, AuthResponse, CreateUser, SignInUser } from '../types';
 
-export const signUp = async (userData: CreateUser): Promise<AuthResponse> => {
+const postAuthPayload = async (
+  path: '/auth/sign-up' | '/auth/sign-in',
+  userData: CreateUser | SignInUser,
+  fallbackMessage: string
+): Promise<AuthResponse> => {
   try {
-    const { data } = await customAxios.post('/auth/sign-up', userData);
+    const { data } = await customAxios.post(path, userData);
     return data;
   } catch (err) {
     if (err instanceof AxiosError) {
-      throw new Error(err?.response?.data?.message || 'Sign up failed');
+      throw new Error(err?.response?.data?.message || fallbackMessage);
     }
     throw err;
   }
 };
 
+export const signUp = (userData: CreateUser) =>
+  postAuthPayload('/auth/sign-up', userData, 'Sign up failed');
+
 export const signIn = async (userData: SignInUser): Promise<AuthResponse> => {
-  try {
-    const { data } = await customAxios.post('/auth/sign-in', userData);
-    return data;
-  } catch (err) {
-    if (err instanceof AxiosError) {
-      throw new Error(err?.response?.data?.message || 'Sign in failed');
-    }
-    throw err;
-  }
+  return postAuthPayload('/auth/sign-in', userData, 'Sign in failed');
 };
 
 export const fetchMe = async (): Promise<AuthMeResponse> => {

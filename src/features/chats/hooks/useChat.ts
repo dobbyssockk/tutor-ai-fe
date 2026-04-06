@@ -1,18 +1,26 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getChat, createMessage } from '@/features/chats/services';
 import { ChatResponse, MessageResponse } from '../types';
+import { queryKeys } from '@/shared/lib/queryKeys';
 
 export const useGetChat = (chatId: string | undefined) => {
+  const queryFn = async () => {
+    if (!chatId) throw new Error('chatId is required');
+    return getChat(chatId);
+  };
+
   return useQuery({
-    queryKey: ['chat', chatId],
-    queryFn: () => getChat(chatId!),
-    enabled: !!chatId,
+    queryKey: queryKeys.chats.detail(chatId),
+    queryFn,
+    enabled: Boolean(chatId),
     retry: false,
   });
 };
 
 export const useSendMessage = (chatId: string) => {
   const qc = useQueryClient();
+  const chatDetailKey = queryKeys.chats.detail(chatId);
+
   return useMutation<
     MessageResponse,
     Error,
@@ -22,11 +30,11 @@ export const useSendMessage = (chatId: string) => {
     mutationFn: (input) => createMessage(chatId, input),
 
     onMutate: async (input) => {
-      await qc.cancelQueries({ queryKey: ['chat', chatId] });
+      await qc.cancelQueries({ queryKey: chatDetailKey });
 
-      const previous = qc.getQueryData<ChatResponse>(['chat', chatId]);
+      const previous = qc.getQueryData<ChatResponse>(chatDetailKey);
 
-      qc.setQueryData<ChatResponse>(['chat', chatId], (old) => {
+      qc.setQueryData<ChatResponse>(chatDetailKey, (old) => {
         if (!old) return old;
 
         return {
@@ -51,12 +59,12 @@ export const useSendMessage = (chatId: string) => {
 
     onError: (_err, _input, context) => {
       if (context?.previous) {
-        qc.setQueryData(['chat', chatId], context.previous);
+        qc.setQueryData(chatDetailKey, context.previous);
       }
     },
 
     onSuccess: ({ user, assistant }) => {
-      qc.setQueryData<ChatResponse>(['chat', chatId], (old) => {
+      qc.setQueryData<ChatResponse>(chatDetailKey, (old) => {
         if (!old) return old;
 
         return {

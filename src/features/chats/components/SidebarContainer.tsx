@@ -1,9 +1,14 @@
 import { useMemo } from 'react';
-import { IconMessages } from '@tabler/icons-react';
+import { IconMessageCircle } from '@tabler/icons-react';
 
 import { AppSidebar } from './sidebar/app-sidebar';
 import useAuthStore from '@/features/auth/store';
-import { useDeleteAllChats, useDeleteChat, useGetChats } from '@/features/chats/hooks/useChats';
+import {
+  useDeleteAllChats,
+  useDeleteChat,
+  useGetChats,
+  useRenameChat,
+} from '@/features/chats/hooks/useChats';
 
 const SidebarContainer = ({
   variant,
@@ -13,6 +18,7 @@ const SidebarContainer = ({
   const { user, signOut } = useAuthStore();
   const { data } = useGetChats();
   const { mutate } = useDeleteChat();
+  const { mutate: renameChat } = useRenameChat();
   const { mutate: deleteAllChats } = useDeleteAllChats();
 
   const navMainItems = useMemo(() => {
@@ -21,11 +27,12 @@ const SidebarContainer = ({
       id: chat.id,
       title: chat.title,
       date: new Date(chat.updatedAt).toLocaleDateString('ru-RU'),
-      icon: IconMessages,
+      icon: IconMessageCircle,
     }));
   }, [data]);
 
   const handleDelete = (id: string) => mutate(id);
+  const handleRename = (id: string, title: string) => renameChat({ id, title });
   const hasChats = (data?.chats?.length ?? 0) > 0;
 
   const sidebarData = {
@@ -43,6 +50,7 @@ const SidebarContainer = ({
       user={sidebarData.user}
       navMainItems={sidebarData.navMainItems}
       onDeleteItem={handleDelete}
+      onRenameItem={handleRename}
       onDeleteAll={hasChats ? deleteAllChats : undefined}
       onSignOut={signOut}
     />

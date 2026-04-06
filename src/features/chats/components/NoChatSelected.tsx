@@ -11,8 +11,10 @@ const NoChatSelected = () => {
   const { mutate, isPending } = useCreateChat();
 
   const handleSend = () => {
-    if (!text.trim()) return;
-    mutate(text);
+    const normalizedText = text.trim();
+    if (!normalizedText) return;
+    mutate(normalizedText);
+    setText('');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

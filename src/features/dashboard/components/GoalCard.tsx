@@ -57,6 +57,8 @@ const getAssessmentState = (assessment?: AssessmentSummary) => {
     lastScore,
     needsRetake,
     needsExtraPass,
+    passesRequired,
+    passesCompleted,
     assessmentResultDate,
     canStartAssessment,
   };
@@ -71,7 +73,6 @@ const getAssessmentButtonLabel = ({
 }: {
   isCreatingForTopic: boolean;
   isStartingAssessment: boolean;
-  assessment?: AssessmentSummary;
   needsExtraPass: boolean;
   needsRetake: boolean;
   lastAttempt: AssessmentSummary['lastAttempt'] | null;
@@ -260,9 +261,15 @@ const GoalCard = ({
                   lastScore,
                   needsRetake,
                   needsExtraPass,
+                  passesRequired,
+                  passesCompleted,
                   assessmentResultDate,
                   canStartAssessment,
                 } = getAssessmentState(assessment);
+                const remainingPasses = Math.max(
+                  passesRequired - passesCompleted,
+                  0
+                );
                 const isCreatingForTopic =
                   isCreatingAssessment && creatingTopicId === topic.id;
                 const disableAssessmentButton =
@@ -390,9 +397,9 @@ const GoalCard = ({
                           ) : null}
                         </div>
                       </div>
-                      <div className="text-right space-y-1">
+                      <div className="shrink-0 text-right space-y-1">
                         <span
-                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                          className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                             status.className
                           } ${
                             topic.status === 'done'
@@ -461,7 +468,6 @@ const GoalCard = ({
                           {getAssessmentButtonLabel({
                             isCreatingForTopic,
                             isStartingAssessment,
-                            assessment,
                             needsExtraPass,
                             needsRetake,
                             lastAttempt,
@@ -469,8 +475,9 @@ const GoalCard = ({
                         </Button>
                         {isLate ? (
                           <span className="text-xs text-rose-400">
-                            Дедлайн пропущен — следующая тема заблокирована,
-                            нужно сдать 2 теста
+                            {remainingPasses <= 1
+                              ? 'Дедлайн пропущен — следующая тема заблокирована, нужно сдать еще 1 тест'
+                              : `Дедлайн пропущен — следующая тема заблокирована, нужно сдать ${remainingPasses} теста`}
                           </span>
                         ) : null}
                       </div>

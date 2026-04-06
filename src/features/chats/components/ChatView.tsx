@@ -76,10 +76,20 @@ const ChatView = () => {
             chatData.chat.messages.map(({ id, role, outputText }) => {
               const isUser = role === 'user';
               const variant = isUser ? 'sent' : 'received';
+              const hasInteractive =
+                !isUser && /```interactive\s*[\s\S]*?```/i.test(outputText);
+
               return (
-                <ChatBubble key={id} variant={variant}>
+                <ChatBubble
+                  key={id}
+                  variant={variant}
+                  className={hasInteractive ? 'max-w-full w-full' : undefined}
+                >
                   <ChatBubbleAvatar fallback={isUser ? 'Я' : 'ИИ'} />
-                  <ChatBubbleMessage variant={variant}>
+                  <ChatBubbleMessage
+                    variant={variant}
+                    className={hasInteractive ? 'w-full max-w-full bg-transparent p-0' : undefined}
+                  >
                     <MarkdownRenderer text={outputText} />
                   </ChatBubbleMessage>
                 </ChatBubble>

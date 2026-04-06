@@ -1,7 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { AxiosError } from 'axios';
+import { toast } from 'sonner';
 
 import {
+  createAssessmentReviewChat,
   createTopicAssessment,
   getAssessmentAttempt,
   getAssessmentResult,
@@ -13,23 +16,47 @@ import {
   AssessmentAttemptResponse,
   AssessmentResultResponse,
 } from '@/features/assessments/types';
+import { queryKeys } from '@/shared/lib/queryKeys';
 
 export const useAssessments = () =>
-  useQuery({ queryKey: ['assessments'], queryFn: getAssessments });
+  useQuery({ queryKey: queryKeys.assessments.all, queryFn: getAssessments });
 
-export const useAssessmentAttempt = (attemptId?: string) =>
-  useQuery({
-    queryKey: ['assessmentAttempt', attemptId],
-    queryFn: () => getAssessmentAttempt(attemptId as string),
-    enabled: !!attemptId,
-  });
+const createRequiredIdQueryFn = <T>(
+  id: string | undefined,
+  fetcher: (requiredId: string) => Promise<T>,
+  idName: string
+) => {
+  return async () => {
+    if (!id) {
+      throw new Error(`${idName} is required`);
+    }
+    return fetcher(id);
+  };
+};
 
-export const useAssessmentResult = (attemptId?: string) =>
-  useQuery({
-    queryKey: ['assessmentResult', attemptId],
-    queryFn: () => getAssessmentResult(attemptId as string),
-    enabled: !!attemptId,
+export const useAssessmentAttempt = (attemptId?: string) => {
+  return useQuery({
+    queryKey: queryKeys.assessments.attempt(attemptId),
+    queryFn: createRequiredIdQueryFn(
+      attemptId,
+      getAssessmentAttempt,
+      'attemptId'
+    ),
+    enabled: Boolean(attemptId),
   });
+};
+
+export const useAssessmentResult = (attemptId?: string) => {
+  return useQuery({
+    queryKey: queryKeys.assessments.result(attemptId),
+    queryFn: createRequiredIdQueryFn(
+      attemptId,
+      getAssessmentResult,
+      'attemptId'
+    ),
+    enabled: Boolean(attemptId),
+  });
+};
 
 export const useStartAssessment = () => {
   const qc = useQueryClient();
@@ -42,7 +69,7 @@ export const useStartAssessment = () => {
       const assessmentId = data.attempt.assessmentId;
 
       qc.setQueryData<AssessmentAttemptResponse>(
-        ['assessmentAttempt', attemptId],
+        queryKeys.assessments.attempt(attemptId),
         data
       );
 
@@ -68,7 +95,7 @@ export const useSubmitAssessment = () => {
     }) => submitAssessment(attemptId, answers),
     onSuccess: (data, variables) => {
       qc.setQueryData<AssessmentResultResponse>(
-        ['assessmentResult', variables.attemptId],
+        queryKeys.assessments.result(variables.attemptId),
         {
           result: {
             attemptId: data.attempt.id,
@@ -86,13 +113,18 @@ export const useSubmitAssessment = () => {
         }
       );
 
-      qc.invalidateQueries({ queryKey: ['goals'] });
-      qc.invalidateQueries({ queryKey: ['assessments'] });
+      qc.invalidateQueries({ queryKey: queryKeys.goals.all });
+      qc.invalidateQueries({ queryKey: queryKeys.assessments.all });
 
       navigate(`/assessments/attempts/${variables.attemptId}/results`);
     },
     onError: (err) => {
       console.error('Submit assessment error:', err);
+      const message =
+        err instanceof AxiosError
+          ? (err.response?.data as { error?: string } | undefined)?.error
+          : undefined;
+      toast.error(message || 'Не удалось отправить тест. Попробуйте еще раз.');
     },
   });
 };
@@ -111,10 +143,42 @@ export const useCreateTopicAssessment = () => {
       regenerate?: boolean;
     }) => createTopicAssessment(goalId, topicId, regenerate),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['assessments'] });
+      qc.invalidateQueries({ queryKey: queryKeys.assessments.all });
     },
     onError: (err) => {
       console.error('Create topic assessment error:', err);
+    },
+  });
+};
+
+export const useCreateAssessmentReviewChat = (attemptId?: string) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!attemptId) {
+        throw new Error('attemptId is required');
+      }
+      return createAssessmentReviewChat(attemptId);
+    },
+    onSuccess: (data) => {
+      if (!attemptId) return;
+      qc.setQueryData<AssessmentResultResponse>(
+        queryKeys.assessments.result(attemptId),
+        (prev) =>
+          prev
+            ? {
+                result: {
+                  ...prev.result,
+                  chatId: data.chatId,
+                },
+              }
+            : prev
+      );
+    },
+    onError: (err) => {
+      console.error('Create assessment review chat error:', err);
+      toast.error('Не удалось открыть разбор в чате. Попробуйте еще раз.');
     },
   });
 };

@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { IconCirclePlusFilled, type Icon } from '@tabler/icons-react';
-import { Trash2 } from 'lucide-react';
+import { Check, Pencil, Trash2, X } from 'lucide-react';
 
 import {
   SidebarGroup,
@@ -22,10 +23,12 @@ import {
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
 
 export function NavMain({
   items,
   onClick,
+  onRename,
   onDeleteAll,
 }: {
   items: {
@@ -35,8 +38,29 @@ export function NavMain({
     icon?: Icon;
   }[];
   onClick: (id: string) => void;
+  onRename: (id: string, title: string) => void;
   onDeleteAll?: () => void;
 }) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftTitle, setDraftTitle] = useState('');
+
+  const startEditing = (id: string, title: string) => {
+    setEditingId(id);
+    setDraftTitle(title);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setDraftTitle('');
+  };
+
+  const submitEditing = (id: string) => {
+    const nextTitle = draftTitle.trim();
+    if (!nextTitle) return;
+    onRename(id, nextTitle);
+    cancelEditing();
+  };
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-5">
@@ -85,58 +109,121 @@ export function NavMain({
         ) : null}
         <SidebarMenu>
           {items.length > 0 && (
-            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Your chats
+            <div className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+              Чаты
             </div>
           )}
 
           {items.map((item) => (
-            <div key={item.id} className="group">
-              <SidebarMenuItem key={item.title} className="relative">
+            <div key={item.id} className="group/chat">
+              {(() => {
+                const isEditing = editingId === item.id;
+                return (
+              <SidebarMenuItem key={item.id} className="relative">
                 <SidebarMenuButton
                   asChild
                   tooltip={item.title}
-                  className="pr-12 rounded-lg border border-transparent hover:border-border/60 hover:bg-muted/40 data-[active=true]:bg-muted/50"
+                  className={`rounded-lg border border-transparent transition-[padding] duration-150 hover:border-border/60 hover:bg-muted/40 data-[active=true]:bg-muted/50 ${
+                    isEditing ? 'pr-20' : 'pr-3 md:group-hover/chat:pr-20'
+                  }`}
                 >
-                  <Link
-                    to={`/chat/${item.id}`}
-                    className="flex items-start gap-3 min-w-0 py-1"
-                  >
-                    {item.icon && <item.icon className="!size-5" />}
-                    <span className="min-w-0">
-                      <span className="block text-sm font-medium truncate">
-                        {item.title}
+                  {isEditing ? (
+                    <div className="flex items-center gap-2 min-w-0 py-1">
+                      {item.icon && <item.icon className="!size-5" />}
+                      <Input
+                        autoFocus
+                        value={draftTitle}
+                        onChange={(event) => setDraftTitle(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') {
+                            event.preventDefault();
+                            submitEditing(item.id);
+                          }
+                          if (event.key === 'Escape') {
+                            event.preventDefault();
+                            cancelEditing();
+                          }
+                        }}
+                        className="h-8"
+                        maxLength={120}
+                      />
+                    </div>
+                  ) : (
+                    <Link
+                      to={`/chat/${item.id}`}
+                      className="flex items-center gap-3 min-w-0 py-1"
+                    >
+                      {item.icon && <item.icon className="!size-5" />}
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-medium truncate">
+                          {item.title}
+                        </span>
                       </span>
-                    </span>
-                  </Link>
+                    </Link>
+                  )}
                 </SidebarMenuButton>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+                {isEditing ? (
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 transition group-hover:opacity-100"
-                      aria-label="Удалить чат"
+                      onClick={() => submitEditing(item.id)}
+                      aria-label="Сохранить название"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Check className="h-4 w-4" />
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Удалить чат?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Это действие нельзя отменить. Чат будет удален навсегда.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Отмена</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => onClick(item.id)}>
-                        Удалить
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={cancelEditing}
+                      aria-label="Отмена"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-100 transition md:opacity-0 md:group-hover/chat:opacity-100">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => startEditing(item.id, item.title)}
+                      aria-label="Переименовать чат"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          aria-label="Удалить чат"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Удалить чат?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Это действие нельзя отменить. Чат будет удален
+                            навсегда.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Отмена</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => onClick(item.id)}>
+                            Удалить
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                )}
               </SidebarMenuItem>
+                );
+              })()}
             </div>
           ))}
         </SidebarMenu>

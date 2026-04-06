@@ -17,6 +17,10 @@ const AssessmentAttemptPage = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, []);
 
+  useEffect(() => {
+    setAnswers({});
+  }, [attemptId]);
+
   const questions = useMemo(
     () => data?.attempt.questions ?? [],
     [data?.attempt.questions]
@@ -71,12 +75,17 @@ const AssessmentAttemptPage = () => {
                   {question.options.map((option) => (
                     <label
                       key={option}
-                      className="flex items-center gap-2 rounded-lg border border-transparent bg-background/60 px-3 py-2 text-sm transition hover:border-border"
+                      className={`flex items-center gap-2 rounded-lg border border-transparent bg-background/60 px-3 py-2 text-sm transition ${
+                        isPending
+                          ? 'cursor-not-allowed opacity-70'
+                          : 'hover:border-border'
+                      }`}
                     >
                       <input
                         type="radio"
                         name={question.id}
                         value={option}
+                        disabled={isPending}
                         checked={answers[question.id] === option}
                         onChange={() =>
                           setAnswers((prev) => ({
@@ -89,16 +98,29 @@ const AssessmentAttemptPage = () => {
                     </label>
                   ))}
                 </div>
+                {question.correctAnswer ? (
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    Правильный ответ:{" "}
+                    <span className="font-medium text-emerald-400">
+                      {question.correctAnswer}
+                    </span>
+                  </p>
+                ) : null}
               </div>
             ))}
 
-            <div className="flex items-center justify-between rounded-xl border bg-background/60 p-4 text-sm text-muted-foreground">
-              <span>
-                {Object.keys(answers).length}/{totalCount} ответов
-              </span>
-              <Button disabled={!isComplete || isPending} onClick={handleSubmit}>
-                {isPending ? 'Отправляем...' : 'Отправить ответы'}
-              </Button>
+            <div className="rounded-xl border bg-background/60 p-4 text-sm text-muted-foreground">
+              <div className="flex items-center justify-between gap-3">
+                <span>
+                  {Object.keys(answers).length}/{totalCount} ответов
+                </span>
+                <Button
+                  disabled={!isComplete || isPending}
+                  onClick={handleSubmit}
+                >
+                  {isPending ? 'Отправляем...' : 'Отправить ответы'}
+                </Button>
+              </div>
             </div>
           </div>
         ) : (
