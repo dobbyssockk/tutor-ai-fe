@@ -152,10 +152,13 @@ export const parseInteractiveSpec = (rawJson: string): InteractiveSpec | null =>
     const a = clamp(toNumber(params.a), -100, 100);
     const b = clamp(toNumber(params.b), -100, 100);
     const c = clamp(toNumber(params.c), -100, 100);
+    const defaultTitle = a === 0
+      ? 'Интерактивная линейная функция'
+      : 'Интерактивная квадратичная функция';
 
     return {
       type: 'quadratic_explorer',
-      title: result.data.title || 'Интерактивная квадратичная функция',
+      title: result.data.title || defaultTitle,
       params: { a, b, c },
       ranges: {
         a: normalizeRange(ranges?.a, DEFAULT_RANGES.a),
