@@ -96,6 +96,10 @@ const splitRenderBlocks = (content: string): RenderBlock[] => {
   }
 
   if (!blocks.length) {
+    const rawSpec = parseInteractiveSpec(content.trim());
+    if (rawSpec) {
+      return [{ kind: 'interactive', spec: rawSpec }];
+    }
     return [{ kind: 'markdown', content }];
   }
 

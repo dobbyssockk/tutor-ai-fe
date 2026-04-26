@@ -60,6 +60,24 @@ const trigRawSchema = z.object({
     .optional(),
 });
 
+const comparisonRawSchema = z.object({
+  type: z.literal('comparison_explorer'),
+  title: z.string().trim().min(1).max(120).optional(),
+  mode: z.literal('overlay').optional(),
+  series: z
+    .array(
+      z
+        .object({
+          id: z.string().trim().min(1).max(40).optional(),
+          label: z.string().trim().min(1).max(120).optional(),
+          color: z.string().trim().min(1).max(40).optional(),
+          spec: z.unknown().optional(),
+        })
+        .passthrough()
+    )
+    .min(2),
+});
+
 export interface QuadraticExplorerSpec {
   type: 'quadratic_explorer';
   title: string;
@@ -72,6 +90,19 @@ export interface QuadraticExplorerSpec {
     a: { min: number; max: number; step: number };
     b: { min: number; max: number; step: number };
     c: { min: number; max: number; step: number };
+  };
+}
+
+export interface LinearExplorerSpec {
+  type: 'linear_explorer';
+  title: string;
+  params: {
+    slope: number;
+    intercept: number;
+  };
+  ranges: {
+    slope: { min: number; max: number; step: number };
+    intercept: { min: number; max: number; step: number };
   };
 }
 
@@ -93,15 +124,29 @@ export interface TrigExplorerSpec {
   };
 }
 
-export type InteractiveSpec = QuadraticExplorerSpec | TrigExplorerSpec;
+export type SingleInteractiveSpec = QuadraticExplorerSpec | LinearExplorerSpec | TrigExplorerSpec;
+
+export interface ComparisonSeriesSpec {
+  id: string;
+  label?: string;
+  color?: string;
+  spec: SingleInteractiveSpec;
+}
+
+export interface ComparisonExplorerSpec {
+  type: 'comparison_explorer';
+  title: string;
+  mode: 'overlay';
+  series: [ComparisonSeriesSpec, ComparisonSeriesSpec];
+}
+
+export type InteractiveSpec = SingleInteractiveSpec | ComparisonExplorerSpec;
 
 const DEFAULT_RANGES = {
   a: { min: -5, max: 5, step: 0.1 },
   b: { min: -10, max: 10, step: 0.1 },
   c: { min: -10, max: 10, step: 0.1 },
 };
-const LOCKED_A_RANGE = { min: 0, max: 0, step: 1 };
-
 const DEFAULT_TRIG_RANGES = {
   amplitude: { min: -5, max: 5, step: 0.1 },
   frequency: { min: -5, max: 5, step: 0.1 },
@@ -129,14 +174,14 @@ const normalizeRange = (
   return { min, max, step };
 };
 
-export const parseInteractiveSpec = (rawJson: string): InteractiveSpec | null => {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(rawJson);
-  } catch {
-    return null;
-  }
+const sanitizeColor = (value: unknown) => {
+  if (typeof value !== 'string') return undefined;
+  const color = value.trim();
+  if (!color || color.length > 40) return undefined;
+  return color;
+};
 
+const parseSingleInteractiveSpec = (parsed: unknown): SingleInteractiveSpec | null => {
   const typed = z
     .object({ type: z.string() })
     .passthrough()
@@ -152,13 +197,21 @@ export const parseInteractiveSpec = (rawJson: string): InteractiveSpec | null =>
     const a = clamp(toNumber(params.a), -100, 100);
     const b = clamp(toNumber(params.b), -100, 100);
     const c = clamp(toNumber(params.c), -100, 100);
-    const defaultTitle = a === 0
-      ? 'Интерактивная линейная функция'
-      : 'Интерактивная квадратичная функция';
+    if (Math.abs(a) < 1e-9) {
+      return {
+        type: 'linear_explorer',
+        title: result.data.title || 'Интерактивная линейная функция',
+        params: { slope: b, intercept: c },
+        ranges: {
+          slope: normalizeRange(ranges?.b, DEFAULT_RANGES.b),
+          intercept: normalizeRange(ranges?.c, DEFAULT_RANGES.c),
+        },
+      };
+    }
 
     return {
       type: 'quadratic_explorer',
-      title: result.data.title || defaultTitle,
+      title: result.data.title || 'Интерактивная квадратичная функция',
       params: { a, b, c },
       ranges: {
         a: normalizeRange(ranges?.a, DEFAULT_RANGES.a),
@@ -176,13 +229,12 @@ export const parseInteractiveSpec = (rawJson: string): InteractiveSpec | null =>
     const intercept = clamp(toNumber(result.data.params.intercept), -100, 100);
 
     return {
-      type: 'quadratic_explorer',
+      type: 'linear_explorer',
       title: result.data.title || 'Интерактивная линейная функция',
-      params: { a: 0, b: slope, c: intercept },
+      params: { slope, intercept },
       ranges: {
-        a: LOCKED_A_RANGE,
-        b: normalizeRange(result.data.ranges?.slope, DEFAULT_RANGES.b),
-        c: normalizeRange(result.data.ranges?.intercept, DEFAULT_RANGES.c),
+        slope: normalizeRange(result.data.ranges?.slope, DEFAULT_RANGES.b),
+        intercept: normalizeRange(result.data.ranges?.intercept, DEFAULT_RANGES.c),
       },
     };
   }
@@ -211,4 +263,57 @@ export const parseInteractiveSpec = (rawJson: string): InteractiveSpec | null =>
   }
 
   return null;
+};
+
+export const parseInteractiveSpec = (rawJson: string): InteractiveSpec | null => {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawJson);
+  } catch {
+    return null;
+  }
+
+  const typed = z
+    .object({ type: z.string() })
+    .passthrough()
+    .safeParse(parsed);
+  if (!typed.success) return null;
+
+  if (typed.data.type === 'comparison_explorer') {
+    const result = comparisonRawSchema.safeParse(parsed);
+    if (!result.success) return null;
+
+    const firstRaw = result.data.series[0];
+    const secondRaw = result.data.series[1];
+    if (!firstRaw || !secondRaw) return null;
+
+    const firstSpec = parseSingleInteractiveSpec(firstRaw.spec ?? firstRaw);
+    const secondSpec = parseSingleInteractiveSpec(secondRaw.spec ?? secondRaw);
+    if (!firstSpec || !secondSpec) return null;
+
+    const firstId = firstRaw.id || 'f1';
+    const secondId = secondRaw.id || 'f2';
+
+    return {
+      type: 'comparison_explorer',
+      title: result.data.title || 'Сравнение двух функций',
+      mode: 'overlay',
+      series: [
+        {
+          id: firstId,
+          label: firstRaw.label || firstSpec.title,
+          color: sanitizeColor(firstRaw.color),
+          spec: firstSpec,
+        },
+        {
+          id: secondId,
+          label: secondRaw.label || secondSpec.title,
+          color: sanitizeColor(secondRaw.color),
+          spec: secondSpec,
+        },
+      ],
+    };
+  }
+
+  return parseSingleInteractiveSpec(parsed);
 };
