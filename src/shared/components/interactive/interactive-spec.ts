@@ -7,6 +7,7 @@ const rangeSchema = z.object({
 });
 
 const trigFunctionSchema = z.enum(['sin', 'cos', 'tan']);
+const subjectSchema = z.enum(['biology', 'literature', 'history', 'general']);
 
 const quadraticRawSchema = z.object({
   type: z.literal('quadratic_explorer'),
@@ -78,6 +79,38 @@ const comparisonRawSchema = z.object({
     .min(2),
 });
 
+const timelineStepRawSchema = z.object({
+  id: z.string().trim().min(1).max(40).optional(),
+  title: z.string().trim().min(1).max(120),
+  details: z.string().trim().min(1).max(600).optional(),
+  period: z.string().trim().min(1).max(80).optional(),
+  imageQuery: z.string().trim().min(1).max(120).optional(),
+  imageCaption: z.string().trim().min(1).max(400).optional(),
+  keyPoints: z.array(z.string().trim().min(1).max(180)).max(8).optional(),
+  outcomes: z.array(z.string().trim().min(1).max(180)).max(6).optional(),
+  terms: z.array(z.string().trim().min(1).max(60)).max(10).optional(),
+  commonMistake: z.string().trim().min(1).max(400).optional(),
+  checkQuestion: z.string().trim().min(1).max(400).optional(),
+  checkAnswer: z.string().trim().min(1).max(400).optional(),
+});
+
+const timelineRawSchema = z.object({
+  type: z.literal('timeline_explorer'),
+  title: z.string().trim().min(1).max(120).optional(),
+  subject: subjectSchema.optional(),
+  steps: z.array(timelineStepRawSchema).min(2).max(12),
+  initialStepId: z.string().trim().min(1).max(40).optional(),
+});
+
+const mediaGalleryRawSchema = z.object({
+  type: z.literal('media_gallery_explorer'),
+  title: z.string().trim().min(1).max(120).optional(),
+  subject: subjectSchema.optional(),
+  query: z.string().trim().min(1).max(120),
+  mediaType: z.enum(['image', 'video']).optional(),
+  limit: z.coerce.number().finite().optional(),
+});
+
 export interface QuadraticExplorerSpec {
   type: 'quadratic_explorer';
   title: string;
@@ -124,13 +157,50 @@ export interface TrigExplorerSpec {
   };
 }
 
-export type SingleInteractiveSpec = QuadraticExplorerSpec | LinearExplorerSpec | TrigExplorerSpec;
+export interface TimelineExplorerStep {
+  id: string;
+  title: string;
+  details?: string;
+  period?: string;
+  imageQuery?: string;
+  imageCaption?: string;
+  keyPoints?: string[];
+  outcomes?: string[];
+  terms?: string[];
+  commonMistake?: string;
+  checkQuestion?: string;
+  checkAnswer?: string;
+}
+
+export interface TimelineExplorerSpec {
+  type: 'timeline_explorer';
+  title: string;
+  subject?: z.infer<typeof subjectSchema>;
+  steps: TimelineExplorerStep[];
+  initialStepId: string;
+}
+
+export interface MediaGalleryExplorerSpec {
+  type: 'media_gallery_explorer';
+  title: string;
+  subject?: z.infer<typeof subjectSchema>;
+  query: string;
+  mediaType: 'image' | 'video';
+  limit: number;
+}
+
+export type ChartInteractiveSpec = QuadraticExplorerSpec | LinearExplorerSpec | TrigExplorerSpec;
+
+export type SingleInteractiveSpec =
+  | ChartInteractiveSpec
+  | TimelineExplorerSpec
+  | MediaGalleryExplorerSpec;
 
 export interface ComparisonSeriesSpec {
   id: string;
   label?: string;
   color?: string;
-  spec: SingleInteractiveSpec;
+  spec: ChartInteractiveSpec;
 }
 
 export interface ComparisonExplorerSpec {
@@ -150,7 +220,7 @@ const DEFAULT_RANGES = {
 const DEFAULT_TRIG_RANGES = {
   amplitude: { min: -5, max: 5, step: 0.1 },
   frequency: { min: -5, max: 5, step: 0.1 },
-  phase: { min: -6.283, max: 6.283, step: 0.1 },
+  phase: { min: -6.2832, max: 6.2832, step: 0.1 },
   offset: { min: -10, max: 10, step: 0.1 },
 };
 
@@ -180,6 +250,27 @@ const sanitizeColor = (value: unknown) => {
   if (!color || color.length > 40) return undefined;
   return color;
 };
+
+const normalizeSubject = (value: unknown): z.infer<typeof subjectSchema> | undefined => {
+  if (typeof value !== 'string') return undefined;
+  const lowered = value.trim().toLowerCase();
+  if (!lowered) return undefined;
+  if (/(биолог|biology|bio)/i.test(lowered)) return 'biology';
+  if (/(литерат|literature|book|poem|author)/i.test(lowered)) return 'literature';
+  if (/(истор|history)/i.test(lowered)) return 'history';
+  return 'general';
+};
+
+const sanitizeMediaQueryText = (value: string) =>
+  value
+    .replace(
+      /\b(пожалуйста|пж|please|покажи|показать|показ|найди|подбери|show|display|find|give|мне|по|теме|тема|про|about|for|изображени[ея]?|изображение|картин(?:ка|ки|ку|а)?|фото|видео|video|image|images|gallery|галере(?:я|ю|и))\b/gi,
+      ' '
+    )
+    .replace(/[^\p{L}\p{N}\s-]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 120);
 
 const parseSingleInteractiveSpec = (parsed: unknown): SingleInteractiveSpec | null => {
   const typed = z
@@ -262,6 +353,65 @@ const parseSingleInteractiveSpec = (parsed: unknown): SingleInteractiveSpec | nu
     };
   }
 
+  if (typed.data.type === 'timeline_explorer') {
+    const result = timelineRawSchema.safeParse(parsed);
+    if (!result.success) return null;
+
+    const steps = result.data.steps.map((step, index) => ({
+      id: step.id || `step_${index + 1}`,
+      title: step.title,
+      details: step.details,
+      period: step.period,
+      imageQuery: step.imageQuery,
+      imageCaption: step.imageCaption,
+      keyPoints: step.keyPoints,
+      outcomes: step.outcomes,
+      terms: step.terms,
+      commonMistake: step.commonMistake,
+      checkQuestion: step.checkQuestion,
+      checkAnswer: step.checkAnswer,
+    }));
+    const initialStepId =
+      result.data.initialStepId && steps.some((step) => step.id === result.data.initialStepId)
+        ? result.data.initialStepId
+        : steps[0]?.id || 'step_1';
+
+    return {
+      type: 'timeline_explorer',
+      title: result.data.title || 'Интерактивный таймлайн',
+      subject: result.data.subject,
+      steps,
+      initialStepId,
+    };
+  }
+
+  if (typed.data.type === 'media_gallery_explorer') {
+    const result = mediaGalleryRawSchema.safeParse(parsed);
+    if (!result.success) return null;
+
+    const clampedLimit = result.data.limit == null ? 6 : Math.round(clamp(result.data.limit, 3, 12));
+    const plainQuery = result.data.query.trim();
+    const cleanedQuery = sanitizeMediaQueryText(plainQuery);
+
+    return {
+      type: 'media_gallery_explorer',
+      title: result.data.title || 'Медиа-галерея по теме',
+      subject: result.data.subject,
+      query: cleanedQuery || plainQuery,
+      mediaType: result.data.mediaType || 'image',
+      limit: clampedLimit,
+    };
+  }
+
+  return null;
+};
+
+const parseChartInteractiveSpec = (parsed: unknown): ChartInteractiveSpec | null => {
+  const spec = parseSingleInteractiveSpec(parsed);
+  if (!spec) return null;
+  if (spec.type === 'quadratic_explorer') return spec;
+  if (spec.type === 'linear_explorer') return spec;
+  if (spec.type === 'trig_explorer') return spec;
   return null;
 };
 
@@ -287,8 +437,8 @@ export const parseInteractiveSpec = (rawJson: string): InteractiveSpec | null =>
     const secondRaw = result.data.series[1];
     if (!firstRaw || !secondRaw) return null;
 
-    const firstSpec = parseSingleInteractiveSpec(firstRaw.spec ?? firstRaw);
-    const secondSpec = parseSingleInteractiveSpec(secondRaw.spec ?? secondRaw);
+    const firstSpec = parseChartInteractiveSpec(firstRaw.spec ?? firstRaw);
+    const secondSpec = parseChartInteractiveSpec(secondRaw.spec ?? secondRaw);
     if (!firstSpec || !secondSpec) return null;
 
     const firstId = firstRaw.id || 'f1';
@@ -315,5 +465,31 @@ export const parseInteractiveSpec = (rawJson: string): InteractiveSpec | null =>
     };
   }
 
-  return parseSingleInteractiveSpec(parsed);
+  const single = parseSingleInteractiveSpec(parsed);
+  if (single) return single;
+
+  if (typeof parsed === 'object' && parsed) {
+    const fallback = parsed as Record<string, unknown>;
+    if (Array.isArray(fallback.steps) || Array.isArray(fallback.events)) {
+      const normalized = parseSingleInteractiveSpec({
+        ...fallback,
+        type: 'timeline_explorer',
+        steps: fallback.steps ?? fallback.events,
+        subject: normalizeSubject(fallback.subject ?? fallback.discipline),
+      });
+      if (normalized) return normalized;
+    }
+
+    if (typeof fallback.query === 'string' || typeof fallback.search === 'string') {
+      const normalized = parseSingleInteractiveSpec({
+        ...fallback,
+        type: 'media_gallery_explorer',
+        query: fallback.query ?? fallback.search,
+        subject: normalizeSubject(fallback.subject ?? fallback.discipline),
+      });
+      if (normalized) return normalized;
+    }
+  }
+
+  return null;
 };
