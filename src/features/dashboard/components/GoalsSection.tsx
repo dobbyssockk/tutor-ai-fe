@@ -33,7 +33,7 @@ const GoalsSection = () => {
   const hasGoals = goals.length > 0;
   const doneCount = useMemo(
     () => goals.filter((goal) => goal.status === 'done').length,
-    [goals]
+    [goals],
   );
   const openCount = goals.length - doneCount;
 
@@ -50,12 +50,7 @@ const GoalsSection = () => {
   return (
     <section className="lg:col-span-2 space-y-4 rounded-xl border bg-card/60 p-6 shadow-sm">
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">
-            Цели и задачи
-          </p>
-          <h2 className="mt-1 text-xl font-semibold">Планируйте обучение</h2>
-        </div>
+        <h2 className="mt-1 text-xl font-semibold">Запланировать обучение</h2>
         <div className="flex gap-2 text-xs text-muted-foreground">
           <span className="rounded-full bg-background/80 px-3 py-1">
             В работе: {openCount}

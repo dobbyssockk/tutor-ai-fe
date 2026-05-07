@@ -112,7 +112,7 @@ const ChatBubbleMessage = React.forwardRef<
     <div
       className={cn(
         chatBubbleMessageVariants({ variant, layout, className }),
-        "break-words max-w-full",
+        "relative break-words max-w-full",
       )}
       ref={ref}
       {...props}

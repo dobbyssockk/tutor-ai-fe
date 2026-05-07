@@ -26,7 +26,7 @@ const DashboardHeader = () => {
             Панель Tutor AI
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Ставьте цели и отслеживайте прогресс.
+            Ставьте цели и отслеживайте прогресс
           </p>
         </div>
       </div>

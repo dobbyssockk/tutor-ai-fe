@@ -49,7 +49,7 @@ const ChatMessageList = ({
   return (
     <div className="relative w-full h-full">
       <div
-        className={`flex flex-col w-full h-full p-4 overflow-y-auto ${className}`}
+        className={`flex flex-col w-full h-full p-4 overflow-y-auto overflow-x-hidden ${className}`}
         ref={scrollRef}
         onWheel={disableAutoScroll}
         onTouchMove={disableAutoScroll}
