@@ -3,6 +3,19 @@ import { getChat, createMessage } from '@/features/chats/services';
 import { ChatResponse, MessageResponse } from '../types';
 import { queryKeys } from '@/shared/lib/queryKeys';
 
+const sortChatMessages = (data: ChatResponse): ChatResponse => ({
+  chat: {
+    ...data.chat,
+    messages: [...data.chat.messages].sort((a, b) => {
+      const dateDiff =
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (dateDiff !== 0) return dateDiff;
+      if (a.role !== b.role) return a.role === 'user' ? -1 : 1;
+      return a.id.localeCompare(b.id);
+    }),
+  },
+});
+
 export const useGetChat = (chatId: string | undefined) => {
   const queryFn = async () => {
     if (!chatId) throw new Error('chatId is required');
@@ -12,6 +25,7 @@ export const useGetChat = (chatId: string | undefined) => {
   return useQuery({
     queryKey: queryKeys.chats.detail(chatId),
     queryFn,
+    select: sortChatMessages,
     enabled: Boolean(chatId),
     retry: false,
   });

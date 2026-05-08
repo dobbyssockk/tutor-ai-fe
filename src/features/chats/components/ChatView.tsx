@@ -71,6 +71,32 @@ const GraphSuggestionList = ({ disabled, onSelect }: GraphSuggestionListProps) =
   </div>
 );
 
+const NextMessageSuggestionList = ({
+  disabled,
+  suggestions,
+  onSelect,
+}: {
+  disabled: boolean;
+  suggestions: string[];
+  onSelect: (prompt: string) => void;
+}) => (
+  <div className="flex flex-wrap gap-2">
+    {suggestions.map((suggestion) => (
+      <Button
+        key={suggestion}
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={disabled}
+        className="h-8 rounded-full border-border/70 bg-secondary/40 px-3 text-xs hover:bg-secondary"
+        onClick={() => onSelect(suggestion)}
+      >
+        {suggestion}
+      </Button>
+    ))}
+  </div>
+);
+
 const copyToClipboard = async (value: string) => {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(value);
@@ -244,7 +270,86 @@ const AutoPromptRenderer = ({ text }: { text: string }) => {
   );
 };
 
-const SERVICE_BLOCK_RE = /```(?:interactive|geometry)\s*[\s\S]*?```/gi;
+const SUGGESTIONS_BLOCK_RE = /```suggestions\s*([\s\S]*?)```/i;
+const SERVICE_BLOCK_RE = /```(?:interactive|geometry|suggestions)\s*[\s\S]*?```/gi;
+const VISUAL_SERVICE_BLOCK_RE = /```(?:interactive|geometry)\s*[\s\S]*?```/gi;
+
+const sanitizeSuggestion = (value: unknown) => {
+  if (typeof value !== 'string') return null;
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  if (normalized.length < 3) return null;
+  return normalized.slice(0, 140);
+};
+
+const parseMessageSuggestions = (value: string) => {
+  const match = value.match(SUGGESTIONS_BLOCK_RE);
+  if (!match?.[1]) return [];
+
+  try {
+    const parsed = JSON.parse(match[1]);
+    const items = Array.isArray(parsed)
+      ? parsed
+      : parsed && typeof parsed === 'object' && 'suggestions' in parsed
+        ? (parsed as { suggestions?: unknown }).suggestions
+        : [];
+
+    if (!Array.isArray(items)) return [];
+
+    return items
+      .map(sanitizeSuggestion)
+      .filter((item): item is string => Boolean(item))
+      .slice(0, 4);
+  } catch {
+    return match[1]
+      .split('\n')
+      .map((line) => line.replace(/^[-*\d.)\s]+/, ''))
+      .map(sanitizeSuggestion)
+      .filter((item): item is string => Boolean(item))
+      .slice(0, 4);
+  }
+};
+
+const inferMessageSuggestions = (value: string) => {
+  const text = getMessageTextWithoutServiceBlocks(value);
+  const lower = text.toLowerCase();
+  const suggestions: string[] = [];
+
+  const add = (suggestion: string) => {
+    if (!suggestions.includes(suggestion)) {
+      suggestions.push(suggestion);
+    }
+  };
+
+  if (/(есть ли вопросы|есть вопросы|дай знать|хочешь|предложения|как тебе|если.*непонятно)/i.test(lower)) {
+    add('Объясни проще');
+    add('Дай пример');
+  }
+
+  if (/(контрольн|вопрос|проверь|тест|практик)/i.test(lower)) {
+    add('Проверь меня вопросом');
+  }
+
+  if (/(домашн|задани|упражнен|практик)/i.test(lower)) {
+    add('Разбери домашнее задание');
+  }
+
+  if (/(пример|промпт|формул|алгоритм|нейросет|график|процент|функц)/i.test(lower)) {
+    add('Покажи еще один пример');
+  }
+
+  if (/(сравн|отличи|разниц|тип|вид)/i.test(lower)) {
+    add('Сравни варианты');
+  }
+
+  return suggestions.slice(0, 4);
+};
+
+const getMessageSuggestions = (value: string) => {
+  const explicitSuggestions = parseMessageSuggestions(value);
+  return explicitSuggestions.length
+    ? explicitSuggestions
+    : inferMessageSuggestions(value);
+};
 
 const getMessageTextWithoutServiceBlocks = (value: string) =>
   value
@@ -253,7 +358,7 @@ const getMessageTextWithoutServiceBlocks = (value: string) =>
     .trim();
 
 const getMessageServiceBlocks = (value: string) =>
-  value.match(SERVICE_BLOCK_RE)?.join('\n\n') ?? '';
+  value.match(VISUAL_SERVICE_BLOCK_RE)?.join('\n\n') ?? '';
 
 const getCopyableMessageText = (value: string) =>
   getMessageTextWithoutServiceBlocks(value);
@@ -351,9 +456,12 @@ const ChatView = () => {
               const hasAutoPrompt = isUser && Boolean(parseAutoPrompt(outputText));
               const hasGraphSuggestions =
                 !isUser && outputText.includes(INTERACTIVE_GUARDRAIL_TEXT);
+              const messageSuggestions = !isUser && !hasGraphSuggestions
+                ? getMessageSuggestions(outputText)
+                : [];
               const textWithoutServiceBlocks = hasInteractive
                 ? getMessageTextWithoutServiceBlocks(outputText)
-                : outputText;
+                : getMessageTextWithoutServiceBlocks(outputText);
               const serviceBlocks = hasInteractive
                 ? getMessageServiceBlocks(outputText)
                 : '';
@@ -402,7 +510,7 @@ const ChatView = () => {
                       {hasAutoPrompt ? (
                         <AutoPromptRenderer text={outputText} />
                       ) : (
-                        <MarkdownRenderer text={outputText} />
+                        <MarkdownRenderer text={textWithoutServiceBlocks} />
                       )}
                       <ChatBubbleActionWrapper
                         variant={variant}
@@ -428,7 +536,7 @@ const ChatView = () => {
                 </ChatBubble>
               );
 
-              if (!hasGraphSuggestions) {
+              if (!hasGraphSuggestions && !messageSuggestions.length) {
                 return (
                   <div key={id} className="flex w-full flex-col">
                     {messageBubble}
@@ -439,12 +547,23 @@ const ChatView = () => {
               return (
                 <div key={id} className="flex w-full flex-col items-start">
                   {messageBubble}
-                  <div className="ml-12 mt-2 max-w-[60%]">
-                    <GraphSuggestionList
-                      disabled={isPending}
-                      onSelect={handleSuggestionSelect}
-                    />
-                  </div>
+                  {messageSuggestions.length ? (
+                    <div className="ml-12 mt-2 max-w-[70%]">
+                      <NextMessageSuggestionList
+                        disabled={isPending}
+                        suggestions={messageSuggestions}
+                        onSelect={handleSuggestionSelect}
+                      />
+                    </div>
+                  ) : null}
+                  {hasGraphSuggestions ? (
+                    <div className="ml-12 mt-2 max-w-[60%]">
+                      <GraphSuggestionList
+                        disabled={isPending}
+                        onSelect={handleSuggestionSelect}
+                      />
+                    </div>
+                  ) : null}
                 </div>
               );
             })

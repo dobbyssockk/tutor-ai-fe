@@ -3,9 +3,12 @@ import axios from 'axios';
 import queryClient from './queryClient';
 import useAuthStore from '@/features/auth/store';
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 const customAxios = axios.create({
   baseURL: BASE_URL,
+  headers: {
+    'ngrok-skip-browser-warning': 'true',
+  },
 });
 
 customAxios.interceptors.request.use((config) => {

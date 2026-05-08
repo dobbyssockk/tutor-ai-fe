@@ -26,6 +26,7 @@ type RenderBlock =
     };
 
 const INTERACTIVE_BLOCK_RE = /```interactive\s*([\s\S]*?)```/gi;
+const HIDDEN_BLOCK_RE = /```(?:suggestions|geometry)\s*[\s\S]*?```/gi;
 
 const normalizeMathDelimiters = (input: string) => {
   let output = input;
@@ -58,9 +59,10 @@ const markdownUrlTransform = (url: string, key: string) => {
 
 const splitRenderBlocks = (content: string): RenderBlock[] => {
   const blocks: RenderBlock[] = [];
+  const preparedContent = content.replace(HIDDEN_BLOCK_RE, '');
   let cursor = 0;
 
-  const matches = content.matchAll(INTERACTIVE_BLOCK_RE);
+  const matches = preparedContent.matchAll(INTERACTIVE_BLOCK_RE);
   for (const match of matches) {
     const fullMatch = match[0];
     const jsonBody = match[1];
@@ -68,7 +70,7 @@ const splitRenderBlocks = (content: string): RenderBlock[] => {
     const end = start + fullMatch.length;
 
     if (start > cursor) {
-      const before = content.slice(cursor, start);
+      const before = preparedContent.slice(cursor, start);
       if (before.trim()) {
         blocks.push({ kind: 'markdown', content: before });
       }
@@ -88,19 +90,19 @@ const splitRenderBlocks = (content: string): RenderBlock[] => {
     cursor = end;
   }
 
-  if (cursor < content.length) {
-    const tail = content.slice(cursor);
+  if (cursor < preparedContent.length) {
+    const tail = preparedContent.slice(cursor);
     if (tail.trim()) {
       blocks.push({ kind: 'markdown', content: tail });
     }
   }
 
   if (!blocks.length) {
-    const rawSpec = parseInteractiveSpec(content.trim());
+    const rawSpec = parseInteractiveSpec(preparedContent.trim());
     if (rawSpec) {
       return [{ kind: 'interactive', spec: rawSpec }];
     }
-    return [{ kind: 'markdown', content }];
+    return [{ kind: 'markdown', content: preparedContent }];
   }
 
   return blocks;
