@@ -1,11 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { TimelineExplorerSpec } from '@/shared/components/interactive/interactive-spec';
 import {
-  TIMELINE_SUBJECT_QUERY_HINTS,
-  TimelineImagePreviewState,
-  TimelineMediaState,
-  fetchWikimediaImage,
   getSubjectLabel,
 } from './shared-utils';
 
@@ -13,16 +9,11 @@ const TimelineExplorer = ({ spec }: { spec: TimelineExplorerSpec }) => {
   const [activeStepId, setActiveStepId] = useState(spec.initialStepId);
   const [visitedStepIds, setVisitedStepIds] = useState<string[]>([spec.initialStepId]);
   const [isAnswerVisible, setIsAnswerVisible] = useState(false);
-  const [timelineMedia, setTimelineMedia] = useState<Record<string, TimelineMediaState>>({});
-  const [imagePreview, setImagePreview] = useState<TimelineImagePreviewState | null>(null);
-  const timelineMediaRef = useRef<Record<string, TimelineMediaState>>({});
 
   useEffect(() => {
     setActiveStepId(spec.initialStepId);
     setVisitedStepIds([spec.initialStepId]);
     setIsAnswerVisible(false);
-    setTimelineMedia({});
-    setImagePreview(null);
   }, [spec.initialStepId, spec.steps]);
 
   const activeIndex = useMemo(() => {
@@ -46,113 +37,6 @@ const TimelineExplorer = ({ spec }: { spec: TimelineExplorerSpec }) => {
     setVisitedStepIds((prev) => (prev.includes(activeStepId) ? prev : [...prev, activeStepId]));
     setIsAnswerVisible(false);
   }, [activeStepId]);
-
-  useEffect(() => {
-    timelineMediaRef.current = timelineMedia;
-  }, [timelineMedia]);
-
-  const activeMedia = activeStep ? timelineMedia[activeStep.id] : undefined;
-
-  const buildStepMediaQueries = useCallback(
-    (step: TimelineExplorerSpec['steps'][number]) => {
-      const explicitQuery = (step.imageQuery || '').trim();
-      const subjectHint =
-        TIMELINE_SUBJECT_QUERY_HINTS[spec.subject ?? 'general'] ||
-        TIMELINE_SUBJECT_QUERY_HINTS.general;
-      const candidates = [
-        explicitQuery,
-        `${step.title} ${subjectHint}`,
-        `${spec.title} ${step.title} ${subjectHint}`,
-        step.title,
-      ];
-
-      return Array.from(
-        new Set(
-          candidates
-            .map((query) => (query || '').trim())
-            .filter((query) => query.length >= 3)
-        )
-      ).slice(0, 4);
-    },
-    [spec.subject, spec.title]
-  );
-
-  const activeStepQueries = useMemo(() => {
-    if (!activeStep) return [];
-    return buildStepMediaQueries(activeStep);
-  }, [activeStep, buildStepMediaQueries]);
-
-  useEffect(() => {
-    if (!activeStep) return;
-    if (!activeStepQueries.length) return;
-    const state = timelineMediaRef.current[activeStep.id];
-    if (state) return;
-
-    const stepId = activeStep.id;
-    const controller = new AbortController();
-    let didTimeout = false;
-    const timeoutId = window.setTimeout(() => {
-      didTimeout = true;
-      controller.abort();
-    }, 10000);
-
-    setTimelineMedia((prev) => {
-      if (prev[stepId]) return prev;
-      const next = {
-        ...prev,
-        [stepId]: { status: 'loading' as const },
-      };
-      timelineMediaRef.current = next;
-      return next;
-    });
-
-    const loadStepMedia = async () => {
-      try {
-        for (const query of activeStepQueries) {
-          const item = await fetchWikimediaImage(query, controller.signal);
-          if (item) {
-            setTimelineMedia((prev) => {
-              const next = {
-                ...prev,
-                [stepId]: { status: 'ready' as const, item },
-              };
-              timelineMediaRef.current = next;
-              return next;
-            });
-            return;
-          }
-        }
-
-        setTimelineMedia((prev) => {
-          const next = {
-            ...prev,
-            [stepId]: { status: 'error' as const },
-          };
-          timelineMediaRef.current = next;
-          return next;
-        });
-      } catch (error) {
-        if (controller.signal.aborted && !didTimeout) return;
-        setTimelineMedia((prev) => {
-          const next = {
-            ...prev,
-            [stepId]: { status: 'error' as const },
-          };
-          timelineMediaRef.current = next;
-          return next;
-        });
-        console.error(error);
-      } finally {
-        window.clearTimeout(timeoutId);
-      }
-    };
-
-    loadStepMedia();
-    return () => {
-      window.clearTimeout(timeoutId);
-      controller.abort();
-    };
-  }, [activeStep, activeStepQueries]);
 
   const goToStep = (index: number) => {
     const bounded = Math.max(0, Math.min(spec.steps.length - 1, index));
@@ -229,65 +113,6 @@ const TimelineExplorer = ({ spec }: { spec: TimelineExplorerSpec }) => {
               </span>
             ) : null}
           </div>
-
-          {activeStepQueries.length && activeMedia?.status ? (
-            <div className="space-y-2 rounded-md border bg-background px-3 py-3">
-              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                Иллюстрация этапа
-              </p>
-              {activeMedia.status === 'loading' ? (
-                <p className="text-sm text-muted-foreground">Подбираю изображение из Wikimedia...</p>
-              ) : null}
-              {activeMedia.status === 'ready' && activeMedia.item ? (
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setImagePreview({
-                        url: activeMedia.item?.url || '',
-                        alt: activeStep.imageCaption || activeMedia.item?.title || 'Иллюстрация',
-                        caption:
-                          activeStep.imageCaption ||
-                          activeMedia.item?.description ||
-                          activeMedia.item?.title ||
-                          '',
-                        pageUrl: activeMedia.item?.pageUrl || '',
-                      })
-                    }
-                    className="group relative w-full overflow-hidden rounded-md border bg-muted cursor-zoom-in"
-                  >
-                    <img
-                      src={activeMedia.item.url}
-                      alt={activeStep.imageCaption || activeMedia.item.title}
-                      loading="lazy"
-                      className="h-52 w-full object-contain transition-transform duration-200 group-hover:scale-[1.02] md:h-64"
-                    />
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/45 px-3 text-center text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
-                      Нажмите, чтобы открыть полностью
-                    </div>
-                  </button>
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-                    <span className="line-clamp-2">
-                      {activeStep.imageCaption || activeMedia.item.description || activeMedia.item.title}
-                    </span>
-                    <a
-                      href={activeMedia.item.pageUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="underline underline-offset-2 hover:text-foreground"
-                    >
-                      Источник
-                    </a>
-                  </div>
-                </div>
-              ) : null}
-              {activeMedia.status === 'error' ? (
-                <p className="text-sm text-muted-foreground">
-                  Не удалось подобрать изображение для этого шага.
-                </p>
-              ) : null}
-            </div>
-          ) : null}
 
           <div className="space-y-1">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
@@ -406,41 +231,6 @@ const TimelineExplorer = ({ spec }: { spec: TimelineExplorerSpec }) => {
         </section>
       ) : null}
 
-      {imagePreview ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setImagePreview(null)}
-        >
-          <div
-            className="relative w-full max-w-6xl space-y-2"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setImagePreview(null)}
-              className="ml-auto block rounded-md border border-white/30 bg-black/40 px-3 py-1 text-xs text-white"
-            >
-              Закрыть
-            </button>
-            <img
-              src={imagePreview.url}
-              alt={imagePreview.alt}
-              className="max-h-[82vh] w-full rounded-md border border-white/25 bg-black object-contain"
-            />
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-white/85">
-              <span className="line-clamp-2">{imagePreview.caption}</span>
-              <a
-                href={imagePreview.pageUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="underline underline-offset-2 hover:text-white"
-              >
-                Источник
-              </a>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 };

@@ -61,9 +61,11 @@ const splitRenderBlocks = (content: string): RenderBlock[] => {
   const blocks: RenderBlock[] = [];
   const preparedContent = content.replace(HIDDEN_BLOCK_RE, '');
   let cursor = 0;
+  let hasInteractiveBlock = false;
 
   const matches = preparedContent.matchAll(INTERACTIVE_BLOCK_RE);
   for (const match of matches) {
+    hasInteractiveBlock = true;
     const fullMatch = match[0];
     const jsonBody = match[1];
     const start = match.index ?? 0;
@@ -80,11 +82,7 @@ const splitRenderBlocks = (content: string): RenderBlock[] => {
       const spec = parseInteractiveSpec(jsonBody);
       if (spec) {
         blocks.push({ kind: 'interactive', spec });
-      } else {
-        blocks.push({ kind: 'markdown', content: fullMatch });
       }
-    } else {
-      blocks.push({ kind: 'markdown', content: fullMatch });
     }
 
     cursor = end;
@@ -98,6 +96,10 @@ const splitRenderBlocks = (content: string): RenderBlock[] => {
   }
 
   if (!blocks.length) {
+    if (hasInteractiveBlock) {
+      return [];
+    }
+
     const rawSpec = parseInteractiveSpec(preparedContent.trim());
     if (rawSpec) {
       return [{ kind: 'interactive', spec: rawSpec }];
