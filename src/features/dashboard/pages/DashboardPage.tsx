@@ -5,7 +5,7 @@ import GoalsSection from '@/features/dashboard/components/GoalsSection';
 const DashboardPage = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-10">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-3 py-6 sm:gap-8 sm:px-6 sm:py-10">
         <DashboardHeader />
         <AccountPreviewCard />
 

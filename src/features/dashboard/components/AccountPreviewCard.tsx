@@ -45,27 +45,29 @@ const AccountPreviewCard = () => {
   }, [displayName, instructions, user?.displayName, user?.tutorInstructions]);
 
   return (
-    <section className="rounded-xl border bg-card/60 p-6 shadow-sm">
+    <section className="min-w-0 rounded-xl border bg-card/60 p-4 shadow-sm sm:p-6">
       <details className="group">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
-          <div className="space-y-1">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+          <div className="min-w-0 space-y-1">
             <p className="text-sm font-medium text-muted-foreground">Профиль</p>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm">
               {displayNameLabel ? (
                 <>
-                  <span className="font-semibold">{displayNameLabel}</span>
-                  <span className="text-muted-foreground">
+                  <span className="max-w-full break-words font-semibold">
+                    {displayNameLabel}
+                  </span>
+                  <span className="max-w-full break-all text-muted-foreground">
                     {user?.email ?? 'Email not set'}
                   </span>
                 </>
               ) : (
-                <span className="font-semibold">
+                <span className="max-w-full break-all font-semibold">
                   {user?.email ?? 'Email not set'}
                 </span>
               )}
             </div>
           </div>
-          <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform group-open:rotate-180" />
+          <ChevronDown className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
         </summary>
 
         <div className="mt-6 space-y-6">
@@ -73,30 +75,30 @@ const AccountPreviewCard = () => {
             <p className="text-sm font-medium text-muted-foreground">
               Детали аккаунта
             </p>
-            <div className="mt-3 grid gap-3 rounded-lg border bg-background/60 p-4 text-sm">
-              <div className="flex items-center justify-between gap-3">
+            <div className="mt-3 grid gap-3 rounded-lg border bg-background/60 p-3 text-sm sm:p-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <span className="text-muted-foreground">
                   Отображаемое имя
                   <span className="ml-1 text-xs text-muted-foreground">
                     (используется в чате)
                   </span>
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-end">
                   {isEditingName ? (
                     <Input
                       id="display-name"
                       value={displayName}
                       onChange={(event) => setDisplayName(event.target.value)}
                       placeholder="Ваше имя"
-                      className="h-8 w-40 text-sm"
+                      className="h-8 min-w-0 flex-1 text-sm sm:w-40 sm:flex-none"
                       aria-label="Отображаемое имя"
                     />
                   ) : (
                     <span
                       className={
                         displayNameValue
-                          ? 'font-medium'
-                          : 'text-muted-foreground'
+                          ? 'min-w-0 break-words font-medium'
+                          : 'min-w-0 text-muted-foreground'
                       }
                     >
                       {displayNameValue || 'Не задано'}
@@ -117,9 +119,9 @@ const AccountPreviewCard = () => {
                   </Button>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-muted-foreground">Электронная почта</span>
-                <span className="font-medium">{user?.email ?? '-'}</span>
+                <span className="break-all font-medium">{user?.email ?? '-'}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Зарегистрирован</span>

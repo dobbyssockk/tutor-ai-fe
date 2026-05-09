@@ -48,14 +48,14 @@ const GoalsSection = () => {
   }, [assessmentsData?.assessments]);
 
   return (
-    <section className="lg:col-span-2 space-y-4 rounded-xl border bg-card/60 p-6 shadow-sm">
-      <div className="flex items-center justify-between gap-3">
+    <section className="min-w-0 space-y-4 rounded-xl border bg-card/60 p-4 shadow-sm sm:p-6 lg:col-span-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="mt-1 text-xl font-semibold">Запланировать обучение</h2>
-        <div className="flex gap-2 text-xs text-muted-foreground">
-          <span className="rounded-full bg-background/80 px-3 py-1">
+        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+          <span className="whitespace-nowrap rounded-full bg-background/80 px-3 py-1">
             В работе: {openCount}
           </span>
-          <span className="rounded-full bg-background/80 px-3 py-1">
+          <span className="whitespace-nowrap rounded-full bg-background/80 px-3 py-1">
             Готово: {doneCount}
           </span>
         </div>

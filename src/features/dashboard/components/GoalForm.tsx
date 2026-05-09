@@ -74,7 +74,7 @@ const GoalForm = ({ isCreating, onCreateGoal }: GoalFormProps) => {
   return (
     <form
       onSubmit={handleAddGoal}
-      className="space-y-3 rounded-lg border bg-background/60 p-4"
+      className="min-w-0 space-y-3 rounded-lg border bg-background/60 p-3 sm:p-4"
     >
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-2">
@@ -108,7 +108,7 @@ const GoalForm = ({ isCreating, onCreateGoal }: GoalFormProps) => {
             placeholder="Опишите цель, контекст, ограничения, предпочтения и темы, на которые хотите сделать упор."
             value={details}
             onChange={(e) => setDetails(e.target.value)}
-            className="text-sm"
+            className="min-h-28 resize-y text-sm"
           />
         </div>
         <div className="space-y-2">
@@ -132,7 +132,11 @@ const GoalForm = ({ isCreating, onCreateGoal }: GoalFormProps) => {
           />
         </div>
       </div>
-      <Button type="submit" disabled={isAddDisabled} className="w-full">
+      <Button
+        type="submit"
+        disabled={isAddDisabled}
+        className="h-auto min-h-9 w-full whitespace-normal text-center leading-snug"
+      >
         {isCreating ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (

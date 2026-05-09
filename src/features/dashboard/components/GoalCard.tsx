@@ -54,9 +54,9 @@ const GoalCard = ({
   const now = Date.now();
 
   return (
-    <div className="space-y-4 rounded-lg border bg-background/60 p-4">
+    <div className="min-w-0 space-y-4 rounded-lg border bg-background/60 p-3 sm:p-4">
       <div
-        className="flex items-start justify-between gap-4 cursor-pointer"
+        className="flex cursor-pointer flex-col gap-3 min-[360px]:flex-row min-[360px]:items-start min-[360px]:justify-between"
         onClick={() => setIsExpanded((prev) => !prev)}
       >
         <div className="min-w-0 space-y-2">
@@ -77,7 +77,7 @@ const GoalCard = ({
             Добавлено {new Date(goal.createdAt).toLocaleDateString('ru-RU')}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center justify-between gap-2 min-[360px]:justify-end sm:gap-3">
           <Button
             type="button"
             variant="ghost"
@@ -95,7 +95,7 @@ const GoalCard = ({
             />
           </Button>
           <div
-            className={`flex h-12 w-12 items-center justify-center rounded-full border p-[3px] shadow-sm ${
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border p-[3px] shadow-sm ${
               progressPct >= 100
                 ? 'border-emerald-500/60 bg-emerald-500/15'
                 : 'border-primary/30 bg-primary/10'

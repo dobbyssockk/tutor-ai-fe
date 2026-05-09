@@ -52,7 +52,7 @@ const GoalTopicCard = ({
 
   return (
     <div
-      className={`rounded-xl border p-4 shadow-sm transition ${
+      className={`min-w-0 rounded-xl border p-3 shadow-sm transition sm:p-4 ${
         topic.status === 'done'
           ? isAlternate
             ? 'bg-muted/25 border-border/40 opacity-70'
@@ -62,17 +62,19 @@ const GoalTopicCard = ({
           : 'bg-background/80'
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-3">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Тема {topic.order}
             </p>
-            <p className="text-base font-semibold text-foreground">
+            <p className="break-words text-base font-semibold text-foreground">
               {topic.title}
             </p>
             {topic.summary ? (
-              <p className="text-sm text-muted-foreground">{topic.summary}</p>
+              <p className="break-words text-sm text-muted-foreground">
+                {topic.summary}
+              </p>
             ) : null}
           </div>
 
@@ -85,7 +87,7 @@ const GoalTopicCard = ({
                 {topic.subtopics.slice(0, 6).map((subtopic) => (
                   <span
                     key={subtopic}
-                    className="rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-xs text-muted-foreground"
+                    className="max-w-full break-words rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-xs text-muted-foreground"
                   >
                     {subtopic}
                   </span>
@@ -146,7 +148,7 @@ const GoalTopicCard = ({
             ) : null}
           </div>
         </div>
-        <div className="shrink-0 text-right space-y-1">
+        <div className="shrink-0 space-y-1 sm:text-right">
           <span
             className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold ${
               status.className

@@ -124,7 +124,7 @@ export function NavMain({
                   asChild
                   tooltip={item.title}
                   className={`rounded-lg border border-transparent transition-[padding] duration-150 hover:border-border/60 hover:bg-muted/40 data-[active=true]:bg-muted/50 ${
-                    isEditing ? 'pr-20' : 'pr-3 md:group-hover/chat:pr-20'
+                    isEditing ? 'pr-20' : 'pr-20 md:pr-3 md:group-hover/chat:pr-20'
                   }`}
                 >
                   {isEditing ? (
@@ -151,11 +151,11 @@ export function NavMain({
                   ) : (
                     <Link
                       to={`/chat/${item.id}`}
-                      className="flex items-center gap-3 min-w-0 py-1"
+                      className="flex min-w-0 items-center gap-3 overflow-hidden py-1"
                     >
-                      {item.icon && <item.icon className="!size-5" />}
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-medium truncate">
+                      {item.icon && <item.icon className="!size-5 shrink-0" />}
+                      <span className="min-w-0 flex-1 overflow-hidden">
+                        <span className="block truncate text-sm font-medium">
                           {item.title}
                         </span>
                       </span>
