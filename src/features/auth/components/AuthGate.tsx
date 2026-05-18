@@ -20,7 +20,6 @@ const AuthGate = () => {
   }, [data, setUser]);
 
   if (!token) {
-    console.log('Navigate - auth gate');
     return <Navigate to="/signin" replace state={{ from: location }} />;
   }
 

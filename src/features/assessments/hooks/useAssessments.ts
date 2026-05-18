@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { AxiosError } from 'axios';
 import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/shared/lib/utils';
 
 import {
   createAssessmentReviewChat,
@@ -76,7 +76,7 @@ export const useStartAssessment = () => {
       navigate(`/assessments/${assessmentId}/attempts/${attemptId}`);
     },
     onError: (err) => {
-      console.error('Start assessment error:', err);
+      toast.error(getApiErrorMessage(err) || 'Не удалось начать тест. Попробуйте еще раз.');
     },
   });
 };
@@ -119,12 +119,7 @@ export const useSubmitAssessment = () => {
       navigate(`/assessments/attempts/${variables.attemptId}/results`);
     },
     onError: (err) => {
-      console.error('Submit assessment error:', err);
-      const message =
-        err instanceof AxiosError
-          ? (err.response?.data as { error?: string } | undefined)?.error
-          : undefined;
-      toast.error(message || 'Не удалось отправить тест. Попробуйте еще раз.');
+      toast.error(getApiErrorMessage(err) || 'Не удалось отправить тест. Попробуйте еще раз.');
     },
   });
 };
@@ -146,7 +141,7 @@ export const useCreateTopicAssessment = () => {
       qc.invalidateQueries({ queryKey: queryKeys.assessments.all });
     },
     onError: (err) => {
-      console.error('Create topic assessment error:', err);
+      toast.error(getApiErrorMessage(err) || 'Не удалось создать тест. Попробуйте еще раз.');
     },
   });
 };
@@ -177,8 +172,7 @@ export const useCreateAssessmentReviewChat = (attemptId?: string) => {
       );
     },
     onError: (err) => {
-      console.error('Create assessment review chat error:', err);
-      toast.error('Не удалось открыть разбор в чате. Попробуйте еще раз.');
+      toast.error(getApiErrorMessage(err) || 'Не удалось открыть разбор в чате. Попробуйте еще раз.');
     },
   });
 };

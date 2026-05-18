@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import {
   createGoal,
@@ -9,6 +10,7 @@ import {
 } from '@/features/goals/services';
 import { GoalInput, GoalsResponse } from '../types';
 import { queryKeys } from '@/shared/lib/queryKeys';
+import { getApiErrorMessage } from '@/shared/lib/utils';
 
 export const useGoals = () =>
   useQuery({
@@ -68,7 +70,7 @@ export const useStartGoalTopicLesson = () => {
       navigate(`/chat/${data.chatId}`);
     },
     onError: (err) => {
-      console.error('Start goal topic lesson error:', err);
+      toast.error(getApiErrorMessage(err) || 'Не удалось начать урок. Попробуйте еще раз.');
     },
   });
 };

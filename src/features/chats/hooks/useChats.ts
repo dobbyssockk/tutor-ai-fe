@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 
 import {
@@ -12,6 +11,7 @@ import {
 } from '@/features/chats/services';
 import { Chat, ChatResponse } from '@/features/chats/types';
 import { queryKeys } from '@/shared/lib/queryKeys';
+import { getApiErrorMessage } from '@/shared/lib/utils';
 
 const toSidebarChatItem = (chat: Chat): Chat => ({
   id: chat.id,
@@ -43,7 +43,7 @@ export const useCreateChat = () => {
       navigate(`/chat/${chat.id}`);
     },
     onError: (err) => {
-      console.error(err);
+      toast.error(getApiErrorMessage(err) || 'Не удалось создать чат. Попробуйте еще раз.');
     },
   });
 };
@@ -60,7 +60,7 @@ export const useDeleteAllChats = () => {
       navigate('/chat');
     },
     onError: (err) => {
-      console.error(err);
+      toast.error(getApiErrorMessage(err) || 'Не удалось удалить все чаты. Попробуйте еще раз.');
     },
   });
 };
@@ -81,7 +81,7 @@ export const useDeleteChat = () => {
       navigate('/chat');
     },
     onError: (err) => {
-      console.error(err);
+      toast.error(getApiErrorMessage(err) || 'Не удалось удалить чат. Попробуйте еще раз.');
     },
   });
 };
@@ -117,12 +117,7 @@ export const useRenameChat = () => {
       );
     },
     onError: (err) => {
-      console.error(err);
-      const message =
-        err instanceof AxiosError
-          ? (err.response?.data as { error?: string } | undefined)?.error
-          : undefined;
-      toast.error(message || 'Не удалось переименовать чат. Попробуйте еще раз.');
+      toast.error(getApiErrorMessage(err) || 'Не удалось переименовать чат. Попробуйте еще раз.');
     },
   });
 };

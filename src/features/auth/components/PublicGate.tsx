@@ -5,7 +5,6 @@ const PublicGate = () => {
   const { token } = useAuthStore();
 
   if (token) {
-    console.log('Navigate - public gate');
     return <Navigate to="/dashboard" replace />;
   }
 

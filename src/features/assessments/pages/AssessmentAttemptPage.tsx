@@ -14,10 +14,6 @@ const AssessmentAttemptPage = () => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  }, []);
-
-  useEffect(() => {
     setAnswers({});
   }, [attemptId]);
 
