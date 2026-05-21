@@ -162,6 +162,7 @@ const GoalCard = ({
                 <GoalTopicCard
                   key={topic.id}
                   goalId={goal.id}
+                  minutesPerDay={goal.minutesPerDay}
                   topic={topic}
                   index={index}
                   now={now}

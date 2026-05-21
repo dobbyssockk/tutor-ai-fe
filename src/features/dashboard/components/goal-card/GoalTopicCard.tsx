@@ -7,10 +7,12 @@ import {
   getTopicStatusLabel,
   PASSING_SCORE,
 } from './helpers';
+import { topicCalendarDaySpan } from '@/features/goals/topicPace';
 import type { GoalTopicCardProps } from './types';
 
 const GoalTopicCard = ({
   goalId,
+  minutesPerDay,
   topic,
   index,
   now,
@@ -39,6 +41,15 @@ const GoalTopicCard = ({
     assessmentResultDate,
     canStartAssessment,
   } = getAssessmentState(assessment);
+
+  const calendarDaysForTopic = topicCalendarDaySpan(
+    topic.durationWeeks,
+    minutesPerDay
+  );
+  const durationWeeksLabel = (calendarDaysForTopic / 7).toLocaleString('ru-RU', {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 0,
+  });
 
   const remainingPasses = Math.max(passesRequired - passesCompleted, 0);
   const isCreatingForTopic =
@@ -84,17 +95,14 @@ const GoalTopicCard = ({
             </p>
             {topic.subtopics && topic.subtopics.length > 0 ? (
               <div className="mt-2 flex flex-wrap gap-2">
-                {topic.subtopics.slice(0, 6).map((subtopic) => (
+                {topic.subtopics.map((subtopic, subtopicIndex) => (
                   <span
-                    key={subtopic}
+                    key={`${subtopic}-${subtopicIndex}`}
                     className="max-w-full break-words rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-xs text-muted-foreground"
                   >
                     {subtopic}
                   </span>
                 ))}
-                {topic.subtopics.length > 6 ? (
-                  <span className="text-xs text-muted-foreground">…</span>
-                ) : null}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">Подтемы не указаны.</p>
@@ -102,7 +110,7 @@ const GoalTopicCard = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-            <span>Длительность: {topic.durationWeeks} нед.</span>
+            <span>Длительность: {durationWeeksLabel} нед.</span>
             {assessment ? (
               assessment.recentAttempts && assessment.recentAttempts.length > 0 ? (
                 <div className="flex flex-wrap items-center gap-2">

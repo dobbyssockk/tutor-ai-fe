@@ -24,6 +24,7 @@ export type GoalCardProps = {
 
 export type GoalTopicCardProps = {
   goalId: string;
+  minutesPerDay?: number | null;
   topic: GoalTopic;
   index: number;
   now: number;
