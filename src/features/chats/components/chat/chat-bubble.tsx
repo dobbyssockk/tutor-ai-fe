@@ -156,9 +156,11 @@ const ChatBubbleAction: React.FC<ChatBubbleActionProps> = ({
   className,
   variant = "ghost",
   size = "icon",
+  type = "button",
   ...props
 }) => (
   <Button
+    type={type}
     variant={variant}
     size={size}
     className={className}

@@ -63,18 +63,16 @@ const LinearExplorer = ({ spec }: { spec: LinearExplorerSpec }) => {
 
       const xMin = -10;
       const xMax = 10;
-      const y1 = slope * xMin + intercept;
-      const y2 = slope * xMax + intercept;
-      const baseMin = Math.min(y1, y2, 0, intercept);
-      const baseMax = Math.max(y1, y2, 0, intercept);
-      const span = Math.max(baseMax - baseMin, 6);
-      const padding = Math.max(2, span * 0.3);
-      let yMin = baseMin - padding;
-      let yMax = baseMax + padding;
+
+      // Фиксированный диапазон по Y вокруг b: при изменении k вертикальный
+      // масштаб не «подстраивается» под линию, наклон остаётся наглядным.
+      const yHalfSpan = 12;
+      let yMin = intercept - yHalfSpan;
+      let yMax = intercept + yHalfSpan;
 
       if (!Number.isFinite(yMin) || !Number.isFinite(yMax) || Math.abs(yMax - yMin) < 1e-9) {
-        yMin = -10;
-        yMax = 10;
+        yMin = -12;
+        yMax = 12;
       }
 
       const sx = width / (xMax - xMin);

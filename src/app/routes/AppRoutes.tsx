@@ -18,6 +18,7 @@ const AppRoutes = () => {
   const location = useLocation();
 
   useEffect(() => {
+    if (location.pathname.startsWith('/chat')) return;
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, [location.pathname]);
 

@@ -11,68 +11,97 @@ interface ChatMessageListProps extends React.HTMLAttributes<HTMLDivElement> {
   scrollKey?: string | number;
 }
 
-const ChatMessageList = ({
-  className,
-  children,
-  smooth = false,
-  isEnabledScrollToBottom = false,
-  childPadding,
-  forceScrollOnChange = false,
-  scrollKey,
-  ...props
-}: ChatMessageListProps) => {
-  const { scrollRef, isAtBottom, scrollToBottom, disableAutoScroll } =
-    useAutoScroll({
-      smooth,
-      content: children,
-    });
+function assignRef<T>(ref: React.Ref<T> | undefined, value: T | null) {
+  if (!ref) return;
+  if (typeof ref === 'function') {
+    ref(value);
+  } else {
+    (ref as React.MutableRefObject<T | null>).current = value;
+  }
+}
 
-  React.useLayoutEffect(() => {
-    if (!forceScrollOnChange) return;
-    const element = scrollRef.current;
-    if (!element) return;
+const ChatMessageList = React.forwardRef<HTMLDivElement, ChatMessageListProps>(
+  (
+    {
+      className,
+      children,
+      smooth = false,
+      isEnabledScrollToBottom = false,
+      childPadding,
+      forceScrollOnChange = false,
+      scrollKey,
+      ...props
+    },
+    forwardedRef
+  ) => {
+    const { scrollRef, isAtBottom, scrollToBottom, disableAutoScroll } =
+      useAutoScroll({
+        smooth,
+        contentSignature: scrollKey,
+      });
 
-    const scrollNow = () => {
-      element.scrollTop = element.scrollHeight;
-    };
+    const forwardedRefLatest = React.useRef(forwardedRef);
+    forwardedRefLatest.current = forwardedRef;
 
-    scrollNow();
-    const t1 = window.setTimeout(scrollNow, 0);
-    const t2 = window.setTimeout(scrollNow, 50);
+    const setScrollNode = React.useCallback(
+      (node: HTMLDivElement | null) => {
+        scrollRef.current = node;
+        assignRef(forwardedRefLatest.current, node);
+      },
+      [scrollRef]
+    );
 
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-    };
-  }, [forceScrollOnChange, scrollKey, scrollRef]);
+    React.useLayoutEffect(() => {
+      if (!forceScrollOnChange) return;
+      const element = scrollRef.current;
+      if (!element) return;
 
-  return (
-    <div className="relative w-full h-full">
-      <div
-        className={`flex flex-col w-full h-full p-4 overflow-y-auto overflow-x-hidden ${className}`}
-        ref={scrollRef}
-        onWheel={disableAutoScroll}
-        onTouchMove={disableAutoScroll}
-        {...props}
-      >
-        <div className={`flex flex-col gap-6 ${childPadding}`}>{children}</div>
-      </div>
+      const scrollNow = () => {
+        element.scrollTop = element.scrollHeight;
+      };
 
-      {!isAtBottom && isEnabledScrollToBottom && (
-        <Button
-          onClick={() => {
-            scrollToBottom(true);
-          }}
-          size="icon"
-          variant="outline"
-          className="absolute bottom-2 left-1/2 transform -translate-x-1/2 inline-flex rounded-full shadow-md"
-          aria-label="Прокрутить вниз"
+      scrollNow();
+      const t1 = window.setTimeout(scrollNow, 0);
+      const t2 = window.setTimeout(scrollNow, 50);
+
+      return () => {
+        window.clearTimeout(t1);
+        window.clearTimeout(t2);
+      };
+    }, [forceScrollOnChange, scrollKey, scrollRef]);
+
+    return (
+      <div className="relative w-full h-full">
+        <div
+          className={`flex flex-col w-full h-full overflow-y-auto overflow-x-hidden p-4 [overflow-anchor:none] ${className}`}
+          ref={setScrollNode}
+          onWheel={disableAutoScroll}
+          onTouchMove={disableAutoScroll}
+          {...props}
         >
-          <ArrowDown className="h-4 w-4" />
-        </Button>
-      )}
-    </div>
-  );
-};
+          <div className={`flex flex-col gap-6 [overflow-anchor:none] ${childPadding}`}>
+            {children}
+          </div>
+        </div>
+
+        {!isAtBottom && isEnabledScrollToBottom && (
+          <Button
+            onClick={() => {
+              scrollToBottom(true);
+            }}
+            size="icon"
+            variant="outline"
+            className="absolute bottom-2 left-1/2 transform -translate-x-1/2 inline-flex rounded-full shadow-md"
+            aria-label="Прокрутить вниз"
+          >
+            <ArrowDown className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    );
+  }
+);
+
+ChatMessageList.displayName = 'ChatMessageList';
 
 export { ChatMessageList };

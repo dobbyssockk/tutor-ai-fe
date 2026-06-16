@@ -13,8 +13,9 @@ const NoChatSelected = () => {
   const handleSend = () => {
     const normalizedText = text.trim();
     if (!normalizedText) return;
-    mutate(normalizedText);
-    setText('');
+    mutate(normalizedText, {
+      onSuccess: () => setText(''),
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

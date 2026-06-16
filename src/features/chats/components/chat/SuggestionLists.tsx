@@ -33,7 +33,11 @@ export const GraphSuggestionList = ({ disabled, onSelect }: SuggestionListProps)
         variant="outline"
         size="sm"
         disabled={disabled}
+        tabIndex={-1}
         className="h-8 rounded-full border-border/70 bg-secondary/40 px-3 text-xs hover:bg-secondary"
+        onMouseDown={(e) => {
+          e.preventDefault();
+        }}
         onClick={() => onSelect(suggestion.prompt)}
       >
         {suggestion.label}
@@ -55,7 +59,11 @@ export const NextMessageSuggestionList = ({
         variant="outline"
         size="sm"
         disabled={disabled}
+        tabIndex={-1}
         className="h-8 rounded-full border-border/70 bg-secondary/40 px-3 text-xs hover:bg-secondary"
+        onMouseDown={(e) => {
+          e.preventDefault();
+        }}
         onClick={() => onSelect(suggestion)}
       >
         {suggestion}

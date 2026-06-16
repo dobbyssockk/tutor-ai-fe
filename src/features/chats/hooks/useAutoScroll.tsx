@@ -9,14 +9,19 @@ interface ScrollState {
 interface UseAutoScrollOptions {
   offset?: number;
   smooth?: boolean;
-  content?: React.ReactNode;
+  /**
+   * When this value changes, the list likely gained/lost messages or loading state.
+   * Do NOT tie to React `children` identity — cosmetic updates (e.g. copy icon) would retrigger scroll.
+   */
+  contentSignature?: string | number;
 }
 
 export function useAutoScroll(options: UseAutoScrollOptions = {}) {
-  const { offset = 20, smooth = false, content } = options;
+  const { offset = 20, smooth = false, contentSignature } = options;
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastContentHeight = useRef(0);
   const userHasScrolled = useRef(false);
+  const autoScrollEnabledRef = useRef(true);
 
   const [scrollState, setScrollState] = useState<ScrollState>({
     isAtBottom: true,
@@ -80,6 +85,12 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}) {
   }, [handleScroll]);
 
   useEffect(() => {
+    autoScrollEnabledRef.current = scrollState.autoScrollEnabled;
+  }, [scrollState.autoScrollEnabled]);
+
+  // Only react to real thread changes (contentSignature), not scrollState toggles — otherwise
+  // unrelated re-renders can compare heights and fire scrollToBottom while the user is reading up-thread.
+  useEffect(() => {
     const scrollElement = scrollRef.current;
     if (!scrollElement) return;
 
@@ -87,28 +98,29 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}) {
     const hasNewContent = currentHeight !== lastContentHeight.current;
 
     if (hasNewContent) {
-      if (scrollState.autoScrollEnabled) {
+      if (autoScrollEnabledRef.current) {
         requestAnimationFrame(() => {
           scrollToBottom(lastContentHeight.current === 0);
         });
       }
       lastContentHeight.current = currentHeight;
     }
-  }, [content, scrollState.autoScrollEnabled, scrollToBottom]);
+  }, [contentSignature, scrollToBottom]);
 
   useEffect(() => {
     const element = scrollRef.current;
     if (!element) return;
 
     const resizeObserver = new ResizeObserver(() => {
-      if (scrollState.autoScrollEnabled) {
-        scrollToBottom(true);
-      }
+      const el = scrollRef.current;
+      if (!el || !autoScrollEnabledRef.current) return;
+      if (!checkIsAtBottom(el)) return;
+      scrollToBottom(true);
     });
 
     resizeObserver.observe(element);
     return () => resizeObserver.disconnect();
-  }, [scrollState.autoScrollEnabled, scrollToBottom]);
+  }, [checkIsAtBottom, scrollToBottom]);
 
   const disableAutoScroll = useCallback(() => {
     const atBottom = scrollRef.current

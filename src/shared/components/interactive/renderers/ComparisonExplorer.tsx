@@ -109,20 +109,24 @@ const ComparisonExplorer = ({ spec }: { spec: ComparisonExplorerSpec }) => {
       const xMin = xDomain.min;
       const xMax = xDomain.max;
       const total = 1400;
-      const values: number[] = [];
 
-      for (const item of series) {
-        for (let i = 0; i <= total; i += 1) {
-          const x = xMin + ((xMax - xMin) * i) / total;
+      // Compute Y range from the initial (spec-level) series so the scale
+      // stays fixed while the user drags sliders. It only resets when a
+      // genuinely new spec arrives from the AI.
+      const baseValues: number[] = [];
+      const sampleSteps = 300;
+      for (const item of initialSeriesRef.current) {
+        for (let i = 0; i <= sampleSteps; i += 1) {
+          const x = xMin + ((xMax - xMin) * i) / sampleSteps;
           const y = evaluateFunctionAt(item.spec, x);
           if (Number.isFinite(y) && Math.abs(y) <= 200) {
-            values.push(y);
+            baseValues.push(y);
           }
         }
       }
 
-      const minY = values.length ? Math.min(...values) : -10;
-      const maxY = values.length ? Math.max(...values) : 10;
+      const minY = baseValues.length ? Math.min(...baseValues) : -10;
+      const maxY = baseValues.length ? Math.max(...baseValues) : 10;
       const spanY = Math.max(maxY - minY, 2);
       const yPadding = Math.max(1, spanY * 0.2);
       const yMin = minY - yPadding;

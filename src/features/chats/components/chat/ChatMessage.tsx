@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Check, Copy } from 'lucide-react';
 
 import MarkdownRenderer from '@/shared/components/MarkdownRenderer';
@@ -46,6 +47,15 @@ const CopyAction = ({
   >
     <ChatBubbleAction
       type="button"
+      tabIndex={-1}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onCopy(id, outputText);
+      }}
       icon={
         copiedMessageId === id ? (
           <Check className="size-4" />
@@ -56,20 +66,20 @@ const CopyAction = ({
       aria-label="Скопировать сообщение"
       title="Скопировать сообщение"
       className="h-8 w-8 rounded-full border bg-background text-muted-foreground shadow-sm hover:text-foreground"
-      onClick={() => onCopy(id, outputText)}
     />
   </ChatBubbleActionWrapper>
 );
 
-const ChatMessage = ({
-  id,
-  role,
-  outputText,
-  copiedMessageId,
-  isPending,
-  onCopy,
-  onSuggestionSelect,
-}: ChatMessageProps) => {
+const ChatMessage = memo(function ChatMessage(props: ChatMessageProps) {
+  const {
+    id,
+    role,
+    outputText,
+    copiedMessageId,
+    isPending,
+    onCopy,
+    onSuggestionSelect,
+  } = props;
   const isUser = role === 'user';
   const variant = isUser ? 'sent' : ('received' as const);
 
@@ -151,6 +161,8 @@ const ChatMessage = ({
       ) : null}
     </div>
   );
-};
+});
+
+ChatMessage.displayName = 'ChatMessage';
 
 export default ChatMessage;
